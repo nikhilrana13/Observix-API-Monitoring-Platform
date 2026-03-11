@@ -1,0 +1,20 @@
+import express from "express"
+import { body } from "express-validator"
+import { Login, Register } from "../controllers/authcontroller.js"
+const router = express.Router()
+
+
+
+router.post("/register",[
+    body("email").notEmpty().withMessage("Email is Required").isEmail().withMessage("please provide a valid email").normalizeEmail(),
+    body("password").notEmpty().withMessage("Password is required").isLength({min:6}).withMessage("password must be at least 6 characters long"),
+    body("username").notEmpty().trim().escape().withMessage("Username is required")
+],Register)
+
+router.post("/login",[
+    body("email").notEmpty().withMessage("Email is required").isEmail().withMessage('please provide a valid email').normalizeEmail(),
+     body("password").notEmpty().withMessage("Password is required").isString().withMessage("Password must be string").isLength({min:6}).withMessage("password must be at least 6 characters long"),
+],Login)
+
+
+export default router
