@@ -54,7 +54,7 @@ export const Login = async(req,res)=>{
                user.lastLogin = new Date()
                await user.save()
               // generate token 
-              const token = jwt.sign({id:user._id,role:user.role},process.env.JWT_SECRET,{expiresIn:"1day"})
+              const token = jwt.sign({id:user._id,role:user.role},process.env.JWT_SECRET_KEY,{expiresIn:"1day"})
               res.cookie("token",token,{httpOnly:true,secure:true,sameSite:"none"})
               return Response(res,200,"Login successfully",{user:userMapper(user),token})
         }else{
