@@ -63,7 +63,7 @@ export const EachProjectDetails = async(req,res)=>{
             return Response(res,400,"Project not found")
         }
         if(project.userId.toString() !== userId){
-            return Response(res,404,"You are not authorized to View this Project")
+            return Response(res,403,"You are not authorized to View this Project")
         }
         return Response(res,200,"Project details",{project})
     } catch (error) {
@@ -119,7 +119,7 @@ export const DeleteProject = async(req,res)=>{
             return Response(res,400,"Project not found")
         }
         if(project.userId.toString() !== userId){
-            return Response(res,404,"You are not authorized to View this Project")
+            return Response(res,403,"You are not authorized to View this Project")
         }
         // delete project
         await Project.findByIdAndDelete(projectId)
