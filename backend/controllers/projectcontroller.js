@@ -104,7 +104,31 @@ export const UserAllProjects = async(req,res)=>{
     }
 } 
 // delete project by id 
-
+export const DeleteProject = async(req,res)=>{
+    try {
+        const userId = req.user 
+        const projectId = req.params.id 
+        // check user exists or not 
+        const user = await userModel.findById(userId) 
+        if(!user){
+           return  Response(res,403,"User not found")
+        } 
+        // project exists or not 
+        const project =  await Project.findById(projectId)
+        if(!project){
+            return Response(res,400,"Project not found")
+        }
+        if(project.userId.toString() !== userId){
+            return Response(res,404,"You are not authorized to View this Project")
+        }
+        // delete project
+        await Project.findByIdAndDelete(projectId)
+        return Response(res,200,"Project delete successfully")
+    } catch (error) {
+        console.error("failed to delete project",error)
+        return Response(res,500,"Internal server error")
+    }
+}
 
 
 
