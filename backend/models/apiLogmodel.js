@@ -13,7 +13,7 @@ const apiLogSchema = new mongoose.Schema({
 
 // indexes for faster analytics queries
 apiLogSchema.index({ projectId:1 })
-apiLogSchema.index({ timestamp:1 })
+apiLogSchema.index({ timestamp:-1 })
 apiLogSchema.index({ endpoint:1 })
 
 const ApiLog = mongoose.model("ApiLog",apiLogSchema)
