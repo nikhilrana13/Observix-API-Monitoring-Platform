@@ -6,6 +6,7 @@ import { configure } from "./config/db.js"
 import authRoute from "./routes/authroutes.js"
 import projectRoute from "./routes/projectroutes.js"
 import monitorRoute from "./routes/monitorroutes.js"
+import analyticsRoute from "./routes/anayticsroutes.js"
 
 dotenv.config()
 
@@ -25,6 +26,7 @@ app.use(express.urlencoded({extended:false}))
 app.use("/api/auth",authRoute)
 app.use("/api/project",projectRoute)
 app.use("/api/",monitorRoute)
+app.use("/api/analytics/",analyticsRoute)
 
 // connect to db
 configure()
