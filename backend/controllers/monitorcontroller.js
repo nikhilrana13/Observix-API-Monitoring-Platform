@@ -1,3 +1,4 @@
+import { getIo } from "../config/socketservice.js";
 import ApiLog from "../models/apiLogmodel.js";
 import Project from "../models/projectmodel.js";
 import userModel from "../models/usermodel.js";
@@ -22,7 +23,7 @@ export const MonitorApi = async (req, res) => {
       return Response(res, 404, "Invalid API key");
     }
     // save api log
-    await ApiLog.create({
+  const log = await ApiLog.create({
       projectId: project._id,
       endpoint,
       method,
@@ -36,6 +37,26 @@ export const MonitorApi = async (req, res) => {
     // increment request count
     await Project.findByIdAndUpdate(project._id,{
         $inc:{requestCount:1}
+    })
+    // socket emit 
+    const io = getIo()
+    // for live api logs 
+    io.to(`user-${project.userId}`).emit("new-api-log",{
+      projectId: log.projectId,
+      endpoint: log.endpoint,
+      method: log.method,
+      statusCode: log.statusCode,
+      responseTime: log.responseTime,
+      timestamp: log.timestamp,
+      userAgent: log.userAgent,
+      ip: log.ip,
+      error: log.error
+    })
+    // for project stats cards 
+    io.to(`user-${project.userId}`).emit("project-stats-update",{
+      projectId:project._id,
+      statusCode,
+      responseTime
     })
     return Response(res, 200, "Log Captured");
   } catch (error) {
