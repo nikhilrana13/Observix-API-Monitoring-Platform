@@ -7,6 +7,7 @@ import authRoute from "./routes/authroutes.js"
 import projectRoute from "./routes/projectroutes.js"
 import monitorRoute from "./routes/monitorroutes.js"
 import analyticsRoute from "./routes/anayticsroutes.js"
+import ChatRoute from "./routes/aichatbotroutes.js"
 
 dotenv.config()
 
@@ -27,6 +28,7 @@ app.use("/api/auth",authRoute)
 app.use("/api/project",projectRoute)
 app.use("/api/",monitorRoute)
 app.use("/api/analytics/",analyticsRoute)
+app.use("/api/ai",ChatRoute)
 
 // connect to db
 configure()
