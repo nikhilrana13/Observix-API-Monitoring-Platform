@@ -28,7 +28,6 @@ app.use(express.urlencoded({extended:false}))
 const server = http.createServer(app)
 initializeSocket(server)
 
-
 // routes
 app.use("/api/auth",authRoute)
 app.use("/api/project",projectRoute)
