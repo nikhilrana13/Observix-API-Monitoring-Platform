@@ -8,6 +8,8 @@ import projectRoute from "./routes/projectroutes.js"
 import monitorRoute from "./routes/monitorroutes.js"
 import analyticsRoute from "./routes/anayticsroutes.js"
 import ChatRoute from "./routes/aichatbotroutes.js"
+import { initializeSocket } from "./config/socketservice.js"
+import http from "http"
 
 dotenv.config()
 
@@ -22,6 +24,10 @@ app.use(express.json())
 app.use(cookieParser())
 app.use(express.urlencoded({extended:false}))
 
+// create io socket server 
+const server = http.createServer(app)
+initializeSocket(server)
+
 
 // routes
 app.use("/api/auth",authRoute)
@@ -34,6 +40,6 @@ app.use("/api/ai",ChatRoute)
 configure()
 
 
-app.listen(Port,(()=>{
+server.listen(Port,(()=>{
     console.log(`server is running on ${Port}`)
 }))

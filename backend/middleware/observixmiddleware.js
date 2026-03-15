@@ -1,5 +1,7 @@
 import axios from "axios"
 
+const OBSERVIX_API_URL = "http://localhost:3000/api/monitor"
+
 export const observixMiddleware = (apiKey) => {
    return(req,res,next)=>{
     const startTime = Date.now()
@@ -17,11 +19,11 @@ export const observixMiddleware = (apiKey) => {
         timestamp: new Date()
       }
       try{
-        await axios.post(process.env.PULSE_API_URL,logData,{
+        await axios.post(OBSERVIX_API_URL,logData,{
           timeout:2000
         })
       }catch(error){
-        console.log("Pulse monitoring failed:",error.message)
+        console.log("Observix monitoring failed:",error.message)
       }
     })
     next()
