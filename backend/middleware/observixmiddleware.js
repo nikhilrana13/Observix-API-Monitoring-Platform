@@ -23,7 +23,7 @@ export const observixMiddleware = (apiKey) => {
           timeout:2000
         })
       }catch(error){
-        console.log("Observix monitoring failed:",error.message)
+        console.error("Observix monitoring failed:",error.message)
       }
     })
     next()
