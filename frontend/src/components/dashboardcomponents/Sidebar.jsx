@@ -1,3 +1,4 @@
+import useLogout from '../../hooks/useLogout';
 import { BiFolder } from 'react-icons/bi';
 import { LuLayoutDashboard, LuLogOut, LuSettings2 } from 'react-icons/lu'
 import { NavLink } from 'react-router-dom'
@@ -8,7 +9,8 @@ const Sidebar = () => {
         { to: "projects", label: "Projects", icon: BiFolder },
         { to: "settings", label: "Settings", icon: LuSettings2 },
     ];
-    const getNavClass = (isActive) => isActive ? "bg-[#6a4dff]/10 text-[#6a4dff] text-white px-3 py-3 rounded-md flex items-center gap-2 " : "px-3 py-3 mb-2 rounded-md hover:bg-[#6a4dff]/10 hover:text-[#6a4dff] transition-all duration-300 text-white";
+    const getNavClass = (isActive) => isActive ? "bg-[#6a4dff]/10 text-[#6a4dff]  px-3 py-3 rounded-md flex items-center gap-2 " : "px-3 py-3 mb-2 rounded-md hover:bg-[#6a4dff]/10 hover:text-[#6a4dff] transition-all duration-300 text-white";
+    const {handleLogout} = useLogout()
    
 
     return (
@@ -24,11 +26,10 @@ const Sidebar = () => {
                     </NavLink>
                 ))}
             </nav>
-            <div className="mt-auto border-t-2 border-[#6a4dff]/10 ">
+            <div onClick={handleLogout} className="mt-auto border-t-2 border-[#6a4dff]/10 ">
                 {/* Logout */}
                 <div
-                    className="flex cursor-pointer text-white items-center justify-between px-5 py-4 gap-3  transition hover:bg-[#6a4dff]/10 hover:text-[#6a4dff]"
-                >
+                    className="flex cursor-pointer text-white items-center justify-between px-5 py-4 gap-3  transition hover:bg-[#6a4dff]/10 hover:text-[#6a4dff]">
                     <span>Logout</span>
                     <LuLogOut size={18} />
                 </div>

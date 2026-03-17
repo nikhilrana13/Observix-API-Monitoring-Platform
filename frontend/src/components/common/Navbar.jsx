@@ -3,10 +3,13 @@ import { Link, NavLink, useLocation } from 'react-router-dom';
 import { HiX } from 'react-icons/hi'
 import { MdClose } from 'react-icons/md'
 import { TiThMenu } from 'react-icons/ti'
+import { useSelector } from 'react-redux';
+import ProfileDropdown from './ProfileDropdown';
 
 const Navbar = () => {
     const [open, setOpen] = useState(false)
     const { pathname } = useLocation()
+    const user = useSelector((state) => state.Auth.user)
 
     const navlinkClass = (path) => {
         return `font-normal  text-white relative pb-1 ${pathname === path
@@ -43,12 +46,20 @@ const Navbar = () => {
                     </ul>
                     {/* button */}
                     <div className='flex  items-center gap-5'>
-                        <Link to="/signup" className='w-full hidden md:flex truncate  text-white cursor-pointer border-gray-100 rounded-md px-5 py-2 hover:text-indigo-700 font-medium text-[0.6rem]  sm:text-[0.9rem]'>
-                            Sign up
-                        </Link>
-                        <Link to="/login" className='w-full hidden md:flex  text-white cursor-pointer border-gray-100 rounded-md px-5 py-2 hover:bg-indigo-700 bg-indigo-600 font-medium text-[0.6rem]  sm:text-[0.9rem]'>
-                            Log in
-                        </Link>
+                        {
+                            user ? (
+                                <ProfileDropdown user={user} />
+                            ) : (
+                                <>
+                                    <Link to="/signup" className='w-full hidden md:flex truncate  text-white cursor-pointer border-gray-100 rounded-md px-5 py-2 hover:text-indigo-700 font-medium text-[0.6rem]  sm:text-[0.9rem]'>
+                                        Sign up
+                                    </Link>
+                                    <Link to="/login" className='w-full hidden md:flex  text-white cursor-pointer border-gray-100 rounded-md px-5 py-2 hover:bg-indigo-700 bg-indigo-600 font-medium text-[0.6rem]  sm:text-[0.9rem]'>
+                                        Log in
+                                    </Link>
+                                </>
+                            )
+                        }
                         <button onClick={() => setOpen(!open)} className='md:hidden  text-white'>
                             {open ? <HiX size={28} /> : <TiThMenu size={28} />}
                         </button>
@@ -67,12 +78,18 @@ const Navbar = () => {
                     <li onClick={() => setOpen(false)}>
                         <NavLink to="/aboutus">Docs</NavLink>
                     </li>
-                    <li onClick={() => setOpen(false)}>
-                        <NavLink to="/signup">Sign up</NavLink>
-                    </li>
-                    <li onClick={() => setOpen(false)}>
-                        <NavLink to="/login">Log in</NavLink>
-                    </li>
+                    {
+                        !user  && (
+                            <>
+                                <li>
+                                    <Link to="/signup">Sign up</Link>
+                                </li>
+                                <li>
+                                    <Link to="/login">Log in</Link>
+                                </li>
+                            </>
+                        )
+                    }
                 </ul>
                 <button onClick={() => setOpen(false)} className='bg-white p-2 rounded-md text-black'>
                     <MdClose size={24} />

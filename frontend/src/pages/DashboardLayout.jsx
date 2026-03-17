@@ -46,7 +46,6 @@ const DashboardLayout = () => {
                         <Sidebar />
                     </div>
                 </div>
-
                 {/* Overlay */}
                 {isOpen && (
                     <div
