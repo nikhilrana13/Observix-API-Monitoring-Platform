@@ -6,6 +6,7 @@ import Login from './components/common/Login';
 import DashboardLayout from './pages/DashboardLayout';
 import Dashboard from './components/dashboardcomponents/Dashboard';
 import Projects from './components/dashboardcomponents/Projects';
+import { Toaster } from 'sonner';
 
 const App = () => {
   return (
@@ -22,11 +23,11 @@ const App = () => {
         <Route path='dashboard' element={<Dashboard />} />
         <Route path='projects' element={<Projects />} /> 
 
-        
-
+    
          
         </Route>
       </Routes>
+      <Toaster />
     </div>
   );
 }

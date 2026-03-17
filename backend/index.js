@@ -19,7 +19,10 @@ const app = express()
 
 
 // middlewares
-app.use(cors())
+app.use(cors({
+    origin:process.env.FRONTEND_URL,
+    credentials:true
+}))
 app.use(express.json())
 app.use(cookieParser())
 app.use(express.urlencoded({extended:false}))
@@ -33,7 +36,7 @@ app.use("/api/auth",authRoute)
 app.use("/api/project",projectRoute)
 app.use("/api/",monitorRoute)
 app.use("/api/analytics/",analyticsRoute)
-app.use("/api/ai",ChatRoute)
+app.use("/api/ai",ChatRoute) 
 
 // connect to db
 configure()

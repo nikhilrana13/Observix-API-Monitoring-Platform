@@ -1,8 +1,38 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Footer from './Footer';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useForm } from 'react-hook-form';
+import axios from 'axios';
+import { toast } from 'sonner';
+import { RotatingLines } from 'react-loader-spinner';
 
 const SignUp = () => {
+    const [loading, setLoading] = useState(false)
+    const { register, handleSubmit, formState: { errors } } = useForm()
+    const navigate = useNavigate()
+   
+    // handle form
+    const onSubmit = async (data) => {
+        const formdata = {
+            username: data.username,
+            email: data.email,
+            password: data.password
+        }
+        try {
+            setLoading(true)
+            const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/auth/register`, formdata)
+            if (response.data) {
+                toast.success(response?.data?.message)
+                navigate("/login")
+            }
+        } catch (error) {
+            console.error("Failed to sign up user", error)
+            toast.error(error?.response?.data?.message)
+        } finally {
+            setLoading(false)
+        }
+    }
+
     return (
         <div className="min-h-screen flex flex-col bg-[#161022] text-[#f6f6f8]">
             <main className="flex flex-1 flex-col md:flex-row">
@@ -60,7 +90,7 @@ const SignUp = () => {
                                 Create Account
                             </h2>
                         </div>
-                          {/* Social Buttons */}
+                        {/* Social Buttons */}
                         {/* <div className="space-y-4 mb-8">
                             <button className="w-full flex items-center justify-center gap-3 py-3 px-4 rounded-xl bg-[#211e29]/70 backdrop-blur border border-[#5b13ec1a] hover:bg-[#36333f] transition">
                                 <img
@@ -92,8 +122,8 @@ const SignUp = () => {
                             </div>
                         </div> */}
                         {/* FORM */}
-                        <form className="space-y-5">
-                            <div>
+                        <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+                            <div className='flex flex-col gap-1'>
                                 <label className="block text-xs font-semibold uppercase tracking-wider text-[#cac3d9] mb-2 ml-1">
                                     Full Name
                                 </label>
@@ -101,9 +131,13 @@ const SignUp = () => {
                                     type="text"
                                     placeholder="Alex Rivera"
                                     className="w-full bg-[#1d1a25] border border-[#5b13ec1a] rounded-xl py-3 px-4 text-[#f6f6f8] placeholder:text-[#cac3d9]/40 focus:ring-2 focus:ring-[#5b13ec]/20 focus:border-[#5b13ec] outline-none"
+                                    {...register("username", { required: "Username is Required", maxLength: { value: 30, message: "Max 30 characters allowed" } })}
                                 />
+                                {errors.username && (
+                                    <p className='text-sm text-red-500'>{errors?.username?.message}</p>
+                                )}
                             </div>
-                            <div>
+                            <div className='flex flex-col gap-1'>
                                 <label className="block text-xs font-semibold uppercase tracking-wider text-[#cac3d9] mb-2 ml-1">
                                     Email Address
                                 </label>
@@ -111,9 +145,18 @@ const SignUp = () => {
                                     type="email"
                                     placeholder="alex@company.com"
                                     className="w-full bg-[#1d1a25] border border-[#5b13ec1a] rounded-xl py-3 px-4 text-[#f6f6f8] placeholder:text-[#cac3d9]/40 focus:ring-2 focus:ring-[#5b13ec]/20 focus:border-[#5b13ec] outline-none"
+                                    {...register("email", {
+                                        required: "Email is Required", pattern: {
+                                            value: /^\S+@\S+$/i,
+                                            message: "Invalid email address"
+                                        }
+                                    })}
                                 />
+                                {errors.email && (
+                                    <p className='text-sm text-red-500'>{errors?.email?.message}</p>
+                                )}
                             </div>
-                            <div>
+                            <div className='flex flex-col gap-1'>
                                 <label className="block text-xs font-semibold uppercase tracking-wider text-[#cac3d9] mb-2 ml-1">
                                     Password
                                 </label>
@@ -122,10 +165,35 @@ const SignUp = () => {
                                     type="password"
                                     placeholder="••••••••"
                                     className="w-full bg-[#1d1a25] border border-[#5b13ec1a] rounded-xl py-3 px-4 text-[#f6f6f8] placeholder:text-[#cac3d9]/40 focus:ring-2 focus:ring-[#5b13ec]/20 focus:border-[#5b13ec] outline-none"
+                                    {...register("password", {
+                                        required: "Password is Required", minLength: {
+                                            value: 6,
+                                            message: "Minimum 6 characters required"
+                                        }
+                                    })}
                                 />
+                                {errors.password && (
+                                    <p className='text-sm text-red-500'>{errors?.password?.message}</p>
+                                )}
                             </div>
-                            <button className="w-full bg-[#5b13ec] hover:bg-[#662bf7] text-white font-bold py-4 rounded-xl transition active:scale-[0.98] shadow-[0_0_40px_-10px_rgba(91,19,236,0.3)]">
-                                Create Account
+                            <button type='submit' disabled={loading} className="w-full bg-[#5b13ec] hover:bg-[#662bf7] text-white cursor-pointer font-bold py-4 rounded-xl transition active:scale-[0.98] shadow-[0_0_40px_-10px_rgba(91,19,236,0.3)] flex items-center justify-center">
+                                {
+                                    loading ? (
+                                    <RotatingLines
+                                            visible={true}
+                                            height="24"
+                                            width="24"
+                                            color="#ffffff"
+                                            strokeWidth="5"
+                                            animationDuration="0.75"
+                                            ariaLabel="rotating-lines-loading"
+                                            wrapperStyle={{}}
+                                            wrapperClass=""
+                                        />
+                                    ):(
+                                    "Create Account"
+                                    )
+                                }
                             </button>
                         </form>
                         <p className="mt-8 text-center text-sm text-[#cac3d9]">
@@ -149,7 +217,7 @@ const SignUp = () => {
                     </div>
                 </section>
             </main>
-           <Footer />
+            <Footer />
         </div>
     );
 }
