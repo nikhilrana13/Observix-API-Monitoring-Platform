@@ -95,7 +95,6 @@ const Login = () => {
                   {errors.email && (
                     <p className='text-sm text-red-500'>{errors?.email?.message}</p>
                   )}
-
                 </div>
                 {/* password */}
                 <div className="space-y-2">
