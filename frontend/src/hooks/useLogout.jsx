@@ -17,8 +17,8 @@ const useLogout = () => {
             })
             if(response.data){
                 toast.success(response?.data?.message)
-                dispatch(SetUser(null))
                 localStorage.removeItem("token")
+                dispatch(SetUser(null))
                 navigate("/")
             }
         } catch (error) {

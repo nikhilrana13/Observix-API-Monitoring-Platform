@@ -30,3 +30,15 @@ html,body{
 .animate-slideUp {
   animation: slideUp 0.25s ease-out;
 }
+/* chart shimmer */
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+.animate-shimmer {
+  animation: shimmer 1.5s infinite;
+}
