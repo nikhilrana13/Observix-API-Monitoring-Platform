@@ -1,17 +1,14 @@
 import express from "express"
 import { isAuth } from "../middleware/authmiddleware.js"
-import { DashboardAnalyticsStats, DashboardLatencyGraph, DashboardRequestsGraph, EachProjectAnalyticsStats, ErrorDistribution, SlowEndpoints, TopPerformingEndpoints } from "../controllers/analyticscontroller.js";
+import { DashboardOverview,EachProjectAnalyticsStats,SlowEndpoints} from "../controllers/analyticscontroller.js";
 import { observixMiddleware } from "../middleware/observixmiddleware.js";
 const router = express.Router()
 
 
-router.get("/overview/:id",isAuth,observixMiddleware("pulse_9938b2b587994b9e"),EachProjectAnalyticsStats)
-router.get("/dashboard/stats",isAuth,observixMiddleware("pulse_9938b2b587994b9e"),DashboardAnalyticsStats) 
-router.get("/dashboard/requests",isAuth,DashboardRequestsGraph)
-router.get("/dashboard/latency",isAuth,DashboardLatencyGraph)
-router.get("/top-endpoints",isAuth,TopPerformingEndpoints)
-router.get("/error-distribution",isAuth,ErrorDistribution)
+
+router.get("/dashboard/overview",isAuth,observixMiddleware("pulse_9938b2b587994b9e"),DashboardOverview)
 router.get("/slow-endpoints",isAuth,SlowEndpoints)
+router.get("/project/:id/overview",isAuth,observixMiddleware("pulse_9938b2b587994b9e"),EachProjectAnalyticsStats)
 
 
 export default router  

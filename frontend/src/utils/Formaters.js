@@ -18,3 +18,27 @@ export const formatSuccessRate = (rate) => {
   // if already percent 
   return `${num.toFixed(1)}%`;
 };
+export const normalizeRequests = (data) => {
+  const fullDay = Array.from({ length: 24 }, (_, i) => ({
+    hour: i,
+    requests: 0,
+  }));
+
+  data.forEach((item) => {
+    fullDay[item.hour] = item;
+  });
+
+  return fullDay;
+};
+export const normalizeLatency = (data) => {
+  const fullDay = Array.from({ length: 24 }, (_, i) => ({
+    hour: i,
+    avgLatency: 0,
+  }));
+
+  data.forEach((item) => {
+    fullDay[item.hour] = item;
+  });
+
+  return fullDay;
+};

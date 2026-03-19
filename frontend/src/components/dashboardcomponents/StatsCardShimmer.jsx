@@ -2,7 +2,7 @@ import React from 'react'
 
 const StatsCardShimmer = () => {
   return (
-    <div className="bg-white rounded-xl border border-gray-100 p-6 shadow-sm animate-pulse">
+    <div className="bg-[#1A102C] rounded-xl border border-[#6a4dff]/20 p-6 shadow-sm animate-pulse">
       {/* Top */}
       <div className="flex items-center justify-between">
         <div className="h-4 w-32 bg-gray-200 rounded" />
