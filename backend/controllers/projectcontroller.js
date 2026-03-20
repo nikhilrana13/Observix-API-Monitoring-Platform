@@ -75,7 +75,7 @@ export const EachProjectDetails = async(req,res)=>{
 export const UserAllProjects = async(req,res)=>{
     try {
         const userId = req.user 
-        let {page=1,limit=5} = req.query 
+        let {page=1,limit=6} = req.query 
          page = parseInt(page)
          limit = parseInt(limit)
          const skip = (page - 1) * limit
