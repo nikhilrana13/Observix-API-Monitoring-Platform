@@ -7,6 +7,7 @@ import DashboardLayout from './pages/DashboardLayout';
 import Dashboard from './components/dashboardcomponents/Dashboard';
 import Projects from './components/dashboardcomponents/Projects';
 import { Toaster } from 'sonner';
+import ProjectDetailsPage from './components/dashboardcomponents/ProjectDetailsPage';
 
 const App = () => {
   return (
@@ -22,9 +23,7 @@ const App = () => {
         <Route index element={<Navigate to="dashboard" replace />} /> 
         <Route path='dashboard' element={<Dashboard />} />
         <Route path='projects' element={<Projects />} /> 
-
-    
-         
+        <Route path='project/details/:id' element={<ProjectDetailsPage />} />
         </Route>
       </Routes>
       <Toaster />

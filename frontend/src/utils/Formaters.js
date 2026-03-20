@@ -42,3 +42,15 @@ export const normalizeLatency = (data) => {
 
   return fullDay;
 };
+export const formatRelativeTime = (date) => {
+  const now = new Date();
+  const past = new Date(date);
+  const diff = Math.floor((now - past) / 1000); // seconds
+
+  if (diff < 60) return "Just now";
+  if (diff < 3600) return `${Math.floor(diff / 60)} min ago`;
+  if (diff < 86400) return `${Math.floor(diff / 3600)} hr ago`;
+  if (diff < 2592000) return `${Math.floor(diff / 86400)} days ago`;
+
+  return past.toLocaleDateString();
+};
