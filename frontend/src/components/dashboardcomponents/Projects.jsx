@@ -3,6 +3,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import ProjectCard from './ProjectCard';
 import ProjectCardShimmer from './ProjectCardShimmer';
 import NoProjectsFallback from './NoProjectsFallback';
+import CreateProjectDialog from './CreateProjectDialog';
 
 const Projects = () => {
   const [loading, setLoading] = useState(true)
@@ -11,6 +12,7 @@ const Projects = () => {
   const [pagination, setPagination] = useState({})
   const loaderRef = useRef(null)
   const [isFetchingMore, setIsFetchingMore] = useState(false)
+  const [isCreateProjectOpen,setisCreateprojectOpen] = useState(false)
 
 
   // fetch all projects 
@@ -68,7 +70,8 @@ const Projects = () => {
 
 
   return (
-    <div className='flex flex-col p-5 gap-5  bg-[#161022] min-h-[100vh] overflow-y-auto'>
+    <>
+     <div className='flex flex-col p-5 gap-5  bg-[#161022] min-h-[100vh] overflow-y-auto'>
       {/* heading */}
       <div className='flex sm:items-center gap-5 flex-col sm:flex-row justify-between'>
         <div className='flex flex-col'>
@@ -76,7 +79,7 @@ const Projects = () => {
           <p className='text-gray-500'>Manage your Api projects, Keys and monitor activity</p>
         </div>
         <div>
-          <button className='py-3 rounded-md text-white font-[500] bg-[#5712E3] text-sm px-5'> + Create Project</button>
+          <button onClick={()=>setisCreateprojectOpen(true)}  className='py-3 rounded-md text-white font-[500] bg-[#5712E3] text-sm px-5'> + Create Project</button>
         </div>
       </div>
       {/* projects cards */}
@@ -115,6 +118,12 @@ const Projects = () => {
         )
       }
     </div>
+    {/* create project dialog */}
+    {isCreateProjectOpen && (
+      <CreateProjectDialog onClose={()=>setisCreateprojectOpen(false)} setProjects={setProjects}  />
+    )}
+    </>
+   
   );
 }
 
