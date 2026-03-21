@@ -19,6 +19,13 @@ const ProjectDetailsPage = () => {
       errorCount: 0,
       successRate: ""
     })
+    const [logsloading,setLogsloading] = useState(false)
+    const [selectmethod,setSelectmethod] = useState("") 
+    const [selecttype,setSelecttype] = useState("")
+    const [selectperiod,setSelectperiod] = useState("")
+    const [logs,setLogs] = useState([])
+    const [page,setPage] = useState(1)
+    const [pagination,setPagination] = useState({})
      // stats data
     const statsdata = [
         {
@@ -53,6 +60,7 @@ const ProjectDetailsPage = () => {
     //fetch project stats cards
     useEffect(()=>{
            const fetchStats = async()=>{
+            if (!id) return;
             try {
                 setstatsLoading(true)
                 const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/analytics/project/${id}/overview`,{
@@ -77,6 +85,38 @@ const ProjectDetailsPage = () => {
            }
            fetchStats()
     },[])
+    // fetch api logs 
+    useEffect(()=>{
+            const fetchLogs = async()=>{
+              if (!id) return;
+              try {
+                setLogsloading(true)
+                const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/logs`,{
+                  params:{
+                    projectId:id,
+                    page:page,
+                    method:selectmethod,
+                    type:selecttype,
+                    period:selectperiod,
+                  },headers:{
+                    Authorization:`Bearer ${localStorage.getItem("token")}`
+                  }
+                })
+                // console.log('Response',response.data)
+                if(response.data){
+                    const logs = response?.data?.data?.logs 
+                    const pagination = response?.data?.data?.pagination
+                    setLogs(logs)
+                    setPagination(pagination)
+                }
+              } catch (error) {
+                console.error("failed to fetch logs",error)
+              }finally{
+                setLogsloading(false)
+              }
+            }
+            fetchLogs()
+    },[id,page,selectmethod,selectperiod,selecttype])
 
 
   return (
@@ -106,12 +146,10 @@ const ProjectDetailsPage = () => {
         }
         {/* Api logs */}
         <div className='flex flex-col bg-[#1A102C] border border-[#6a4dff]/20 rounded-xl overflow-hidden'>
-         <FiltersBar />
-         <LogsTable />
-         
+         <FiltersBar setSelectmethod={setSelectmethod} setSelecttype={setSelecttype} setSelectperiod={setSelectperiod} />
+         <LogsTable logs={logs} logsloading={logsloading} />
+
         </div>
-
-
 
       </div>
     </div>
