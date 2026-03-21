@@ -18,7 +18,7 @@ const StatsCard = ({ statsdata}) => {
               <p className="text-sm text-gray-500 font-medium">
                 {title}
               </p>
-              <h2 className="text-2xl font-semibold text-white">
+              <h2 className={`text-2xl font-semibold ${textColor} `}>
                 {value}
               </h2>
             </div>

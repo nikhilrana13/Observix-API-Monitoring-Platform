@@ -1,11 +1,14 @@
-import React from "react";
+import React, { useState } from "react";
 import { FiExternalLink, FiCopy } from "react-icons/fi";
 import { BsGraphUpArrow } from "react-icons/bs";
 import { formatRelativeTime } from "../../utils/Formaters";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import AppleToggle from "./AppleToggle";
 
-const ProjectCard = ({ project}) => {
+const ProjectCard = ({ project, setProjects }) => {
+    const [toggleId, setToggleId] = useState(null)
     const navigate = useNavigate()
     const copyApiKey = async () => {
         if (!project?.apiKey) {
@@ -19,9 +22,31 @@ const ProjectCard = ({ project}) => {
             toast.error("Copy failed ");
         }
     };
-    const handleClick = (id)=>{
+    const handleClick = (id) => {
         navigate(`/observix/project/details/${id}`)
     }
+    const handleToggleProjectStatus = async (projectid, currentStatus) => {
+        try {
+            setToggleId(projectid)
+            const newStatus = currentStatus === "active" ? "inactive" : "active";
+            const id = String(projectid)
+            const response = await axios.put(`${import.meta.env.VITE_BACKEND_URL}/api/project/status/${id}`, {
+                status: newStatus
+            }, {
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem("token")}`
+                }
+            })
+            if (response?.data?.status === "success") {
+                toast.success(response?.data?.message)
+                setProjects((prev) => prev.map((project) => project._id === projectid ? { ...project, status: newStatus } : project))
+            }
+        } catch (error) {
+            console.log("failed to toggle project status", error)
+            toast.error(error?.response?.data?.message || "Internal server error")
+        }
+    }
+
 
     return (
         <div className="group relative bg-[#1A102C] border border-[#6a4dff]/20 rounded-2xl p-5 overflow-hidden hover:shadow-xl transition-all duration-500">
@@ -38,8 +63,8 @@ const ProjectCard = ({ project}) => {
                     </p>
                 </div>
                 {/* Status badge */}
-                <span className="px-2 capitalize py-1 text-[10px] rounded-md bg-green-500/10 text-green-400">
-                    {project?.status}
+                <span className={`px-2 capitalize py-1 rounded-lg text-[10px] text-xs font-medium ${project?.status === "active" ? "text-green-400 bg-green-500/10 " : "text-red-400 bg-red-500/10"}`}>
+                    {project?.status === "active" ? "Active" : "Inactive"}
                 </span>
             </div>
             {/* Base URL */}
@@ -96,13 +121,27 @@ const ProjectCard = ({ project}) => {
             </p>
             {/* Footer Actions */}
             <div className="flex items-center justify-between">
-                <button type="button" onClick={()=>handleClick(project?._id)} className="text-xs text-gray-400 hover:text-white">
+                <button type="button" onClick={() => handleClick(project?._id)} className="text-xs text-gray-400 hover:text-white">
                     View Details
                 </button>
+                {/* toggle button */}
+                <div className="flex items-center gap-3">
+                    <span
+                        className={`text-xs font-medium ${project?.status === "active" ? "text-green-400" : "text-red-400"
+                            }`}
+                    >
+                        {project?.status === "active" ? "Active":"Inactive"}
+                    </span>
 
-                <button  className="text-xs bg-[#6a4dff] hover:bg-[#5b3df5] text-white px-3 py-1.5 rounded-md">
-                    Edit
-                </button>
+                    <AppleToggle
+                        checked={project?.status === "active"}
+                        disabled={toggleId === project._id}
+                        onChange={() =>
+                            handleToggleProjectStatus(project?._id, project?.status)
+                        }
+                    />
+                </div>
+
             </div>
         </div>
     );

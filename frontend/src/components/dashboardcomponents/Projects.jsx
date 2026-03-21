@@ -97,7 +97,7 @@ const Projects = () => {
             <div className='grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3'>
               {allprojects?.map((project) => {
                 return (
-                  <ProjectCard key={project?._id} project={project} />
+                  <ProjectCard key={project?._id} project={project} setProjects={setProjects} />
                 )
               })}
             </div>
