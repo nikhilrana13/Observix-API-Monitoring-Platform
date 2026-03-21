@@ -22,6 +22,10 @@ export const MonitorApi = async (req, res) => {
     if (!project) {
       return Response(res, 404, "Invalid API key");
     }
+    // pause monitoring when project status is inactive
+    if(project.status === "inactive"){
+       return Response(res,200,"Monitoring is paused",{paused:true})
+    }
     // save api log
   const log = await ApiLog.create({
       projectId: project._id,
@@ -57,7 +61,7 @@ export const MonitorApi = async (req, res) => {
       projectId:project._id,
       statusCode,
       responseTime
-    })
+    })   
     return Response(res, 200, "Log Captured");
   } catch (error) {
     console.error("failed to monitor api", error);
@@ -68,7 +72,7 @@ export const MonitorApi = async (req, res) => {
 export const FindApiLogs = async (req, res) => {
   try {
     const userId = req.user;
-    let { page = 1, limit = 30, type, status, projectId, period } = req.query;
+    let { page = 1, limit = 30, type, method, projectId, period } = req.query;
     page = parseInt(page);
     limit = parseInt(limit);
     const skip = (page - 1) * limit;
@@ -95,16 +99,18 @@ export const FindApiLogs = async (req, res) => {
     }
     // filter
     let filter = { projectId: project._id };
-     // status
-    if (status) {
-      filter.statusCode = Number(status);
-    } // error logs
-    else if (type === "error") {
+     // error logs
+    if (type === "error") {
       filter.statusCode = { $gte: 500 };
     }
     // slow logs
     else if (type === "slow") {
       filter.responseTime = { $gte: 1000 };
+    }
+    // method 
+    const allowedMethods = ["GET", "POST", "PUT", "DELETE", "PATCH"];
+    if(method && allowedMethods.includes(method.toUpperCase())){
+      filter.method = method.toUpperCase()
     }
     // time filter
     if (period) {

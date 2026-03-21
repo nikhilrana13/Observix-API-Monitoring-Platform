@@ -1,9 +1,119 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import StatsCardShimmer from './StatsCardShimmer';
+import StatsCard from './StatsCard';
+import { BsGraphUpArrow } from 'react-icons/bs';
+import { BiErrorCircle, BiTimer } from 'react-icons/bi';
+import { formatLatency, formatSuccessRate } from '@/utils/Formaters';
+import { FaRegCircleCheck } from 'react-icons/fa6';
+import axios from 'axios';
+import { useParams } from 'react-router-dom';
+import FiltersBar from './FilterBar';
+import LogsTable from './LogsTable';
 
 const ProjectDetailsPage = () => {
+   const {id} = useParams()
+   const [statsloading, setstatsLoading] = useState(false)
+    const [stats, setStats] = useState({
+      totalRequests: 0,
+      avgLatency: 0,
+      errorCount: 0,
+      successRate: ""
+    })
+     // stats data
+    const statsdata = [
+        {
+          title: "Total Requests",
+          value: stats?.totalRequests || 0,
+          icon: BsGraphUpArrow,
+          gradient: "bg-[#23104A]",
+          textColor: "text-[#5B13EC]"
+        },
+        {
+          title: "Avg Response Time",
+          value: formatLatency(stats?.avgLatency || 0),
+          icon: BiTimer,
+          gradient: "bg-[#23104A]",
+          textColor: "text-[#5B13EC]"
+        },
+        {
+          title: "Error Count",
+          value: stats?.errorCount || 0,
+          icon: BiErrorCircle,
+          gradient: "bg-[#301431]",
+          textColor: "text-[#F43F5E]"
+        },
+        {
+          title: "Success Rate",
+          value: formatSuccessRate(stats?.successRate || 0),
+          icon: FaRegCircleCheck,
+          gradient: "bg-[#192134]",
+          textColor: "text-[#10B981]"
+        },
+    ]
+    //fetch project stats cards
+    useEffect(()=>{
+           const fetchStats = async()=>{
+            try {
+                setstatsLoading(true)
+                const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/analytics/project/${id}/overview`,{
+                  headers:{
+                    Authorization:`Bearer ${localStorage.getItem("token")}`
+                  }
+                })
+                // console.log("response",response.data)
+                if(response.data){
+                  const totalRequests = response?.data?.data?.totalrequests24h 
+                  const avgLatency = response?.data?.data?.avgLatency 
+                  const errorCount = response?.data?.data?.errorCount 
+                  const successRate = response?.data?.data?.successRate
+                  setStats((prev)=>({...prev,totalRequests,avgLatency,errorCount,successRate}))
+                }
+              
+            } catch (error) {
+              console.error("failed to fetch stats",error)
+            }finally{
+              setstatsLoading(false)
+            }
+           }
+           fetchStats()
+    },[])
+
+
   return (
-    <div>
-      project detials
+    <div className='flex flex-col p-5 gap-5  bg-[#161022] min-h-[100vh] overflow-y-auto'>
+      {/* heading */}
+      <div className='flex sm:items-center gap-5 flex-col sm:flex-row justify-between'>
+        <div className='flex flex-col'>
+          <h3 className='text-white text-[1.5rem] font-[500] '>Api Logs</h3>
+          <p className='text-gray-500 text-[1rem]'>Monitor real-time Api requests,status code, and latency ( last 24hr )</p>
+        </div>
+        <div>
+        </div>
+      </div>
+      <div className='flex flex-col gap-4'>
+        {
+          statsloading ? (
+            <div className='grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6'>
+              {[1, 2, 3, 4].map((_, i) => {
+                return (
+                  <StatsCardShimmer key={i} />
+                )
+              })}
+            </div>
+          ) : (
+            <StatsCard statsdata={statsdata} />
+          )
+        }
+        {/* Api logs */}
+        <div className='flex flex-col bg-[#1A102C] border border-[#6a4dff]/20 rounded-xl overflow-hidden'>
+         <FiltersBar />
+         <LogsTable />
+         
+        </div>
+
+
+
+      </div>
     </div>
   );
 }
