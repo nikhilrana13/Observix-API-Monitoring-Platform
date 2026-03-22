@@ -11,112 +11,118 @@ import FiltersBar from './FilterBar';
 import LogsTable from './LogsTable';
 
 const ProjectDetailsPage = () => {
-   const {id} = useParams()
-   const [statsloading, setstatsLoading] = useState(false)
-    const [stats, setStats] = useState({
-      totalRequests: 0,
-      avgLatency: 0,
-      errorCount: 0,
-      successRate: ""
-    })
-    const [logsloading,setLogsloading] = useState(false)
-    const [selectmethod,setSelectmethod] = useState("") 
-    const [selecttype,setSelecttype] = useState("")
-    const [selectperiod,setSelectperiod] = useState("")
-    const [logs,setLogs] = useState([])
-    const [page,setPage] = useState(1)
-    const [pagination,setPagination] = useState({})
-     // stats data
-    const statsdata = [
-        {
-          title: "Total Requests",
-          value: stats?.totalRequests || 0,
-          icon: BsGraphUpArrow,
-          gradient: "bg-[#23104A]",
-          textColor: "text-[#5B13EC]"
-        },
-        {
-          title: "Avg Response Time",
-          value: formatLatency(stats?.avgLatency || 0),
-          icon: BiTimer,
-          gradient: "bg-[#23104A]",
-          textColor: "text-[#5B13EC]"
-        },
-        {
-          title: "Error Count",
-          value: stats?.errorCount || 0,
-          icon: BiErrorCircle,
-          gradient: "bg-[#301431]",
-          textColor: "text-[#F43F5E]"
-        },
-        {
-          title: "Success Rate",
-          value: formatSuccessRate(stats?.successRate || 0),
-          icon: FaRegCircleCheck,
-          gradient: "bg-[#192134]",
-          textColor: "text-[#10B981]"
-        },
-    ]
-    //fetch project stats cards
-    useEffect(()=>{
-           const fetchStats = async()=>{
-            if (!id) return;
-            try {
-                setstatsLoading(true)
-                const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/analytics/project/${id}/overview`,{
-                  headers:{
-                    Authorization:`Bearer ${localStorage.getItem("token")}`
-                  }
-                })
-                // console.log("response",response.data)
-                if(response.data){
-                  const totalRequests = response?.data?.data?.totalrequests24h 
-                  const avgLatency = response?.data?.data?.avgLatency 
-                  const errorCount = response?.data?.data?.errorCount 
-                  const successRate = response?.data?.data?.successRate
-                  setStats((prev)=>({...prev,totalRequests,avgLatency,errorCount,successRate}))
-                }
-              
-            } catch (error) {
-              console.error("failed to fetch stats",error)
-            }finally{
-              setstatsLoading(false)
-            }
-           }
-           fetchStats()
-    },[])
-    // fetch api logs 
-    useEffect(()=>{
-            const fetchLogs = async()=>{
-              if (!id) return;
-              try {
-                setLogsloading(true)
-                const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/logs`,{
-                  params:{
-                    projectId:id,
-                    page:page,
-                    method:selectmethod,
-                    type:selecttype,
-                    period:selectperiod,
-                  },headers:{
-                    Authorization:`Bearer ${localStorage.getItem("token")}`
-                  }
-                })
-                // console.log('Response',response.data)
-                if(response.data){
-                    const logs = response?.data?.data?.logs 
-                    const pagination = response?.data?.data?.pagination
-                    setLogs(logs)
-                    setPagination(pagination)
-                }
-              } catch (error) {
-                console.error("failed to fetch logs",error)
-              }finally{
-                setLogsloading(false)
-              }
-            }
-            fetchLogs()
-    },[id,page,selectmethod,selectperiod,selecttype])
+  const { id } = useParams()
+  const [statsloading, setstatsLoading] = useState(false)
+  const [stats, setStats] = useState({
+    totalRequests: 0,
+    avgLatency: 0,
+    errorCount: 0,
+    successRate: ""
+  })
+  const [logsloading, setLogsloading] = useState(false)
+  const [selectmethod, setSelectmethod] = useState("")
+  const [selecttype, setSelecttype] = useState("")
+  const [selectperiod, setSelectperiod] = useState("")
+  const [logs, setLogs] = useState([])
+  const [page, setPage] = useState(1)
+  const [pagination, setPagination] = useState({})
+  // stats data
+  const statsdata = [
+    {
+      title: "Total Requests",
+      value: stats?.totalRequests || 0,
+      icon: BsGraphUpArrow,
+      gradient: "bg-[#23104A]",
+      textColor: "text-[#5B13EC]"
+    },
+    {
+      title: "Avg Response Time",
+      value: formatLatency(stats?.avgLatency || 0),
+      icon: BiTimer,
+      gradient: "bg-[#23104A]",
+      textColor: "text-[#5B13EC]"
+    },
+    {
+      title: "Error Count",
+      value: stats?.errorCount || 0,
+      icon: BiErrorCircle,
+      gradient: "bg-[#301431]",
+      textColor: "text-[#F43F5E]"
+    },
+    {
+      title: "Success Rate",
+      value: formatSuccessRate(stats?.successRate || 0),
+      icon: FaRegCircleCheck,
+      gradient: "bg-[#192134]",
+      textColor: "text-[#10B981]"
+    },
+  ]
+  //fetch project stats cards
+  useEffect(() => {
+    const fetchStats = async () => {
+      if (!id) return;
+      try {
+        setstatsLoading(true)
+        const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/analytics/project/${id}/overview`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`
+          }
+        })
+        // console.log("response",response.data)
+        if (response.data) {
+          const totalRequests = response?.data?.data?.totalrequests24h
+          const avgLatency = response?.data?.data?.avgLatency
+          const errorCount = response?.data?.data?.errorCount
+          const successRate = response?.data?.data?.successRate
+          setStats((prev) => ({ ...prev, totalRequests, avgLatency, errorCount, successRate }))
+        }
+
+      } catch (error) {
+        console.error("failed to fetch stats", error)
+      } finally {
+        setstatsLoading(false)
+      }
+    }
+    fetchStats()
+  }, [id])
+  // fetch api logs 
+  useEffect(() => {
+    const fetchLogs = async () => {
+      if (!id) return;
+      try {
+        setLogsloading(true)
+        const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/logs`, {
+          params: {
+            projectId: id,
+            page: page,
+            method: selectmethod,
+            type: selecttype,
+            period: selectperiod,
+          }, headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`
+          }
+        })
+        // console.log('Response',response.data)
+        if (response.data) {
+          const logs = response?.data?.data?.logs
+          const pagination = response?.data?.data?.pagination
+          setLogs(logs)
+          setPagination(pagination)
+        }
+      } catch (error) {
+        console.error("failed to fetch logs", error)
+      } finally {
+        setLogsloading(false)
+      }
+    }
+    fetchLogs()
+  }, [id, page, selectmethod, selectperiod, selecttype])
+  useEffect(() => {
+  setPage(1)
+}, [selectmethod, selecttype, selectperiod])
+
+  const start = pagination?.currentPage ? (pagination.currentPage - 1) * pagination.limit + 1 : 0;
+  const end = Math.min(pagination?.currentPage * pagination?.limit, pagination?.totalLogs)
 
 
   return (
@@ -146,11 +152,55 @@ const ProjectDetailsPage = () => {
         }
         {/* Api logs */}
         <div className='flex flex-col bg-[#1A102C] border border-[#6a4dff]/20 rounded-xl overflow-hidden'>
-         <FiltersBar setSelectmethod={setSelectmethod} setSelecttype={setSelecttype} setSelectperiod={setSelectperiod} />
-         <LogsTable logs={logs} logsloading={logsloading} />
+          <FiltersBar setSelectmethod={setSelectmethod} setSelecttype={setSelecttype} setSelectperiod={setSelectperiod} />
+          <LogsTable logs={logs} logsloading={logsloading} />
+          {/* pagination */}
+          {
+            !logsloading && (
+              pagination?.totalPages > 1 && (
+                <div className="w-full border-[#6a4dff]/20 py-4 px-6 items-center  border-t flex justify-between">
+                  <div className='flex items-center gap-2'>
+                    <span className="text-[#747474] text-[0.9rem] sm:text-[0.8rem] font-[600]">
+                      Showing {start || "NA"}-{end || "NA"} of{" "}
+                      {pagination?.totalLogs || 0} Logs
+                    </span>
+                  </div>
+                  {/* page button */}
+                  <div>
+                    <div className="flex items-center gap-3">
+                      {/* Prev */}
+                      <button
+                        onClick={() => page > 1 && setPage((prev) => prev - 1)}
+                        disabled={page === 1}
+                        className="px-3 py-1 text-sm rounded-md border border-[#6a4dff]/20 text-white disabled:opacity-50"
+                      >
+                        Prev
+                      </button>
 
+                      {/* Page info */}
+                      <span className="text-white text-sm">
+                        {pagination?.currentPage} / {pagination?.totalPages}
+                      </span>
+                    
+
+                      {/* Next */}
+                      <button
+                        onClick={() =>
+                          page < pagination?.totalPages && setPage((prev) => prev + 1)
+                        }
+                        disabled={page === pagination?.totalPages}
+                        className="px-3 py-1 text-sm rounded-md border border-[#6a4dff]/20 text-white disabled:opacity-50"
+                      >
+                        Next
+                      </button>
+                    </div>
+
+                  </div>
+                </div>
+              )
+            )
+          }
         </div>
-
       </div>
     </div>
   );
