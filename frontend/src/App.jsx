@@ -8,11 +8,13 @@ import Dashboard from './components/dashboardcomponents/Dashboard';
 import Projects from './components/dashboardcomponents/Projects';
 import { Toaster } from 'sonner';
 import ProjectDetailsPage from './components/dashboardcomponents/ProjectDetailsPage';
+import SocketProvider from './components/common/SocketProvider';
 
 const App = () => {
   return (
     <div className='w-full'>
       {/* routes */}
+      <SocketProvider />
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path='/signup' element={<SignUp />} /> 
