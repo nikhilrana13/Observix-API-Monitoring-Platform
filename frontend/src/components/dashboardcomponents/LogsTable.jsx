@@ -61,7 +61,7 @@ const LogsTable = ({ logs, logsloading }) => {
             <tbody>
               {logs?.map((log) => {
                 return (
-                  <tr key={log?._id} className="border-t border-[#6a4dff]/10 hover:bg-[#23104A]">
+                  <tr key={log?._id} className={`border-t border-[#6a4dff]/10 hover:bg-[#23104A] ${log.isNew ? "animate-pulse bg-[#2a1b5c]": ""}`}>
                     <td className="px-6 py-4 text-xs text-gray-400">
                       {new Date(log.timestamp).toLocaleDateString("en-IN",{
                         day:"2-digit",month:"short", year:"2-digit",hour:"2-digit",minute:"2-digit"

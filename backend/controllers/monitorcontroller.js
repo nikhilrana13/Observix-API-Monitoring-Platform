@@ -23,11 +23,11 @@ export const MonitorApi = async (req, res) => {
       return Response(res, 404, "Invalid API key");
     }
     // pause monitoring when project status is inactive
-    if(project.status === "inactive"){
-       return Response(res,200,"Monitoring is paused",{paused:true})
+    if (project.status === "inactive") {
+      return Response(res, 200, "Monitoring is paused", { paused: true });
     }
     // save api log
-  const log = await ApiLog.create({
+    const log = await ApiLog.create({
       projectId: project._id,
       endpoint,
       method,
@@ -39,13 +39,13 @@ export const MonitorApi = async (req, res) => {
       error: statusCode >= 500,
     });
     // increment request count
-    await Project.findByIdAndUpdate(project._id,{
-        $inc:{requestCount:1}
-    })
-    // socket emit 
-    const io = getIo()
-    // for live api logs 
-    io.to(`user-${project.userId}`).emit("new-api-log",{
+    await Project.findByIdAndUpdate(project._id, {
+      $inc: { requestCount: 1 },
+    });
+    // socket emit
+    const io = getIo();
+    // for live api logs
+    io.to(`user-${project.userId}`).emit("new-api-log", {
       projectId: log.projectId,
       endpoint: log.endpoint,
       method: log.method,
@@ -54,14 +54,34 @@ export const MonitorApi = async (req, res) => {
       timestamp: log.timestamp,
       userAgent: log.userAgent,
       ip: log.ip,
-      error: log.error
-    })
-    // for project stats cards 
-    io.to(`user-${project.userId}`).emit("project-stats-update",{
-      projectId:project._id,
-      statusCode,
-      responseTime
-    })   
+      error: log.error,
+    });
+    // for top end points
+    const topEndpoints = await ApiLog.aggregate([
+      { $match: { projectId: project._id } },
+      {
+        $group: {
+          _id: "$endpoint",
+          count: { $sum: 1 },
+          avgLatency:{$avg:"$responseTime"},
+          errorCount:{
+            $sum:{
+              $cond:[{$gte:["$statusCode",500]},1,0]
+            }
+          }
+        },
+      },
+      { $sort: { count: -1 } },
+      { $limit: 5 },
+    ]);
+    io.to(`user-${project.userId}`).emit("top-endpoints-update", {
+      endpoints: topEndpoints.map((e) => ({
+        endpoint: e._id,
+        totalRequests: e.count,
+        avgLatency:Math.round(e.avgLatency || 0),
+        errorCount:e.errorCount
+      })),
+    });
     return Response(res, 200, "Log Captured");
   } catch (error) {
     console.error("failed to monitor api", error);
@@ -99,7 +119,7 @@ export const FindApiLogs = async (req, res) => {
     }
     // filter
     let filter = { projectId: project._id };
-     // error logs
+    // error logs
     if (type === "error") {
       filter.statusCode = { $gte: 500 };
     }
@@ -107,10 +127,10 @@ export const FindApiLogs = async (req, res) => {
     else if (type === "slow") {
       filter.responseTime = { $gte: 1000 };
     }
-    // method 
+    // method
     const allowedMethods = ["GET", "POST", "PUT", "DELETE", "PATCH"];
-    if(method && allowedMethods.includes(method.toUpperCase())){
-      filter.method = method.toUpperCase()
+    if (method && allowedMethods.includes(method.toUpperCase())) {
+      filter.method = method.toUpperCase();
     }
     // time filter
     if (period) {
@@ -153,6 +173,3 @@ export const FindApiLogs = async (req, res) => {
     return Response(res, 500, "Internal server error");
   }
 };
-
-
-

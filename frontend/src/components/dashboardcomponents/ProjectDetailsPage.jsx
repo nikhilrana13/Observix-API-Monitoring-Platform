@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import StatsCardShimmer from './StatsCardShimmer';
 import StatsCard from './StatsCard';
 import { BsGraphUpArrow } from 'react-icons/bs';
@@ -9,6 +9,7 @@ import axios from 'axios';
 import { useParams } from 'react-router-dom';
 import FiltersBar from './FilterBar';
 import LogsTable from './LogsTable';
+import { getSocket } from '../../config/socket';
 
 const ProjectDetailsPage = () => {
   const { id } = useParams()
@@ -26,6 +27,7 @@ const ProjectDetailsPage = () => {
   const [logs, setLogs] = useState([])
   const [page, setPage] = useState(1)
   const [pagination, setPagination] = useState({})
+  const [newLogsCount, setNewLogsCount] = useState(0)
   // stats data
   const statsdata = [
     {
@@ -118,91 +120,139 @@ const ProjectDetailsPage = () => {
     fetchLogs()
   }, [id, page, selectmethod, selectperiod, selecttype])
   useEffect(() => {
-  setPage(1)
-}, [selectmethod, selecttype, selectperiod])
+    setPage(1)
+  }, [selectmethod, selecttype, selectperiod])
+  // live socket logs data
+  useEffect(() => {
+    const socket = getSocket();
+    socket.on("new-api-log", (log) => {
+      if (log.projectId !== id) return
+      // console.log("live log", log);
+      setNewLogsCount((prev)=>prev + 1)
+      // stats
+      setStats((prev) => {
+        const safeLatency = Number(log.responseTime) || 0;
+        const safePrevLatency = Number(prev.avgLatency) || 0;
+        const total = prev.totalRequests + 1;
+        const errors = log.statusCode >= 500 ? prev.errorCount + 1 : prev.errorCount;
+        const newAvg = (safePrevLatency * prev.totalRequests + safeLatency) / total;
+        return {
+          ...prev,
+          totalRequests: total,
+          errorCount: errors,
+          avgLatency: isNaN(newAvg) ? 0 : newAvg,
+          successRate:
+            total > 0 ? ((total - errors) / total) * 100 : 0,
+        };
+      });
+      // logs table 
+      setLogs((prev) => [{ ...log, isNew: true }, ...prev].slice(0, 50))
+      // remove highlight after 1 sec
+      setTimeout(() => {
+        setLogs(prev =>
+          prev.map(l =>
+            l._id === log._id ? { ...l, isNew: false } : l
+          )
+        );
+      }, 1000);
+    });
+    return () => {
+      socket.off("new-api-log");
+    };
+  }, [id]);
+ 
 
   const start = pagination?.currentPage ? (pagination.currentPage - 1) * pagination.limit + 1 : 0;
   const end = Math.min(pagination?.currentPage * pagination?.limit, pagination?.totalLogs)
 
 
   return (
-    <div className='flex flex-col p-5 gap-5  bg-[#161022] min-h-[100vh] overflow-y-auto'>
-      {/* heading */}
-      <div className='flex sm:items-center gap-5 flex-col sm:flex-row justify-between'>
-        <div className='flex flex-col'>
-          <h3 className='text-white text-[1.5rem] font-[500] '>Api Logs</h3>
-          <p className='text-gray-500 text-[1rem]'>Monitor real-time Api requests,status code, and latency ( last 24hr )</p>
+    <>
+      <div className='flex flex-col p-5 gap-5  bg-[#161022] min-h-[100vh] overflow-y-auto'>
+        {/* heading */}
+        <div className='flex sm:items-center gap-5 flex-col sm:flex-row justify-between'>
+          <div className='flex flex-col'>
+            <h3 className='text-white text-[1.5rem] font-[500] '>Api Logs</h3>
+            <p className='text-gray-500 text-[1rem]'>Monitor real-time Api requests,status code, and latency ( last 24hr )</p>
+          </div>
+          <div>
+          </div>
         </div>
-        <div>
-        </div>
-      </div>
-      <div className='flex flex-col gap-4'>
-        {
-          statsloading ? (
-            <div className='grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6'>
-              {[1, 2, 3, 4].map((_, i) => {
-                return (
-                  <StatsCardShimmer key={i} />
-                )
-              })}
-            </div>
-          ) : (
-            <StatsCard statsdata={statsdata} />
-          )
-        }
-        {/* Api logs */}
-        <div className='flex flex-col bg-[#1A102C] border border-[#6a4dff]/20 rounded-xl overflow-hidden'>
-          <FiltersBar setSelectmethod={setSelectmethod} setSelecttype={setSelecttype} setSelectperiod={setSelectperiod} />
-          <LogsTable logs={logs} logsloading={logsloading} />
-          {/* pagination */}
+        <div className='flex flex-col gap-4'>
           {
-            !logsloading && (
-              pagination?.totalPages > 1 && (
-                <div className="w-full border-[#6a4dff]/20 py-4 px-6 items-center  border-t flex justify-between">
-                  <div className='flex items-center gap-2'>
-                    <span className="text-[#747474] text-[0.9rem] sm:text-[0.8rem] font-[600]">
-                      Showing {start || "NA"}-{end || "NA"} of{" "}
-                      {pagination?.totalLogs || 0} Logs
-                    </span>
-                  </div>
-                  {/* page button */}
-                  <div>
-                    <div className="flex items-center gap-3">
-                      {/* Prev */}
-                      <button
-                        onClick={() => page > 1 && setPage((prev) => prev - 1)}
-                        disabled={page === 1}
-                        className="px-3 py-1 text-sm rounded-md border border-[#6a4dff]/20 text-white disabled:opacity-50"
-                      >
-                        Prev
-                      </button>
-
-                      {/* Page info */}
-                      <span className="text-white text-sm">
-                        {pagination?.currentPage} / {pagination?.totalPages}
-                      </span>
-                    
-
-                      {/* Next */}
-                      <button
-                        onClick={() =>
-                          page < pagination?.totalPages && setPage((prev) => prev + 1)
-                        }
-                        disabled={page === pagination?.totalPages}
-                        className="px-3 py-1 text-sm rounded-md border border-[#6a4dff]/20 text-white disabled:opacity-50"
-                      >
-                        Next
-                      </button>
-                    </div>
-
-                  </div>
-                </div>
-              )
+            statsloading ? (
+              <div className='grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6'>
+                {[1, 2, 3, 4].map((_, i) => {
+                  return (
+                    <StatsCardShimmer key={i} />
+                  )
+                })}
+              </div>
+            ) : (
+              <StatsCard statsdata={statsdata} />
             )
           }
+          {/* Api logs */}
+          <div className='flex flex-col bg-[#1A102C] border border-[#6a4dff]/20 rounded-xl overflow-hidden'>
+            <FiltersBar setSelectmethod={setSelectmethod} setSelecttype={setSelecttype} setSelectperiod={setSelectperiod} />
+            <LogsTable logs={logs} logsloading={logsloading} />
+            {/* pagination */}
+            {
+              !logsloading && (
+                pagination?.totalPages > 1 && (
+                  <div className="w-full border-[#6a4dff]/20 py-4 px-6 items-center  border-t flex justify-between">
+                    <div className='flex items-center gap-2'>
+                      <span className="text-[#747474] text-[0.9rem] sm:text-[0.8rem] font-[600]">
+                        Showing {start || "NA"}-{end || "NA"} of{" "}
+                        {pagination?.totalLogs || 0} Logs
+                      </span>
+                    </div>
+                    {/* page button */}
+                    <div>
+                      <div className="flex items-center gap-3">
+                        {/* Prev */}
+                        <button
+                          onClick={() => page > 1 && setPage((prev) => prev - 1)}
+                          disabled={page === 1}
+                          className="px-3 py-1 text-sm rounded-md border border-[#6a4dff]/20 text-white disabled:opacity-50"
+                        >
+                          Prev
+                        </button>
+
+                        {/* Page info */}
+                        <span className="text-white text-sm">
+                          {pagination?.currentPage} / {pagination?.totalPages}
+                        </span>
+                        {/* Next */}
+                        <button
+                          onClick={() =>
+                            page < pagination?.totalPages && setPage((prev) => prev + 1)
+                          }
+                          disabled={page === pagination?.totalPages}
+                          className="px-3 py-1 text-sm rounded-md border border-[#6a4dff]/20 text-white disabled:opacity-50"
+                        >
+                          Next
+                        </button>
+                      </div>
+
+                    </div>
+                  </div>
+                )
+              )
+            }
+          </div>
         </div>
       </div>
-    </div>
+      {/* new log count popup */}
+      {newLogsCount > 0 && (
+        <div
+          onClick={() =>{  window.scrollTo({ top: 0, behavior: "smooth" });setNewLogsCount(0)}}
+          className="fixed bottom-20 right-6 bg-[#5B13EC] text-white px-4 py-2 rounded-full shadow-lg cursor-pointer hover:scale-105 transition animate-bounce"
+        >
+          {newLogsCount} new logs
+        </div>
+      )}
+    </>
   );
 }
 
