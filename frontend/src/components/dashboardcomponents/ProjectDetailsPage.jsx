@@ -128,7 +128,6 @@ const ProjectDetailsPage = () => {
     socket.on("new-api-log", (log) => {
       if (log.projectId !== id) return
       // console.log("live log", log);
-      setNewLogsCount((prev)=>prev + 1)
       // stats
       setStats((prev) => {
         const safeLatency = Number(log.responseTime) || 0;
@@ -146,21 +145,26 @@ const ProjectDetailsPage = () => {
         };
       });
       // logs table 
-      setLogs((prev) => [{ ...log, isNew: true }, ...prev].slice(0, 50))
-      // remove highlight after 1 sec
-      setTimeout(() => {
-        setLogs(prev =>
-          prev.map(l =>
-            l._id === log._id ? { ...l, isNew: false } : l
-          )
-        );
-      }, 1000);
+      if (page === 1) {
+        setNewLogsCount((prev) => prev + 1)
+        setLogs((prev) => [{ ...log, isNew: true }, ...prev].slice(0, 50));
+        setTimeout(() => {
+          setLogs(prev =>
+            prev.map(l =>
+              l._id === log._id ? { ...l, isNew: false } : l
+            )
+          );
+        }, 1000);
+      } else {
+        setNewLogsCount(prev => prev + 1);
+      }
+     
     });
     return () => {
       socket.off("new-api-log");
     };
-  }, [id]);
- 
+  }, [id,page]);
+
 
   const start = pagination?.currentPage ? (pagination.currentPage - 1) * pagination.limit + 1 : 0;
   const end = Math.min(pagination?.currentPage * pagination?.limit, pagination?.totalLogs)
@@ -246,7 +250,7 @@ const ProjectDetailsPage = () => {
       {/* new log count popup */}
       {newLogsCount > 0 && (
         <div
-          onClick={() =>{  window.scrollTo({ top: 0, behavior: "smooth" });setNewLogsCount(0)}}
+          onClick={() => { window.scrollTo({ top: 0, behavior: "smooth" }); setPage(1);setNewLogsCount(0) }}
           className="fixed bottom-20 right-6 bg-[#5B13EC] text-white px-4 py-2 rounded-full shadow-lg cursor-pointer hover:scale-105 transition animate-bounce"
         >
           {newLogsCount} new logs
