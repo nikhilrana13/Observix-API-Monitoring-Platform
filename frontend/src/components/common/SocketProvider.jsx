@@ -9,7 +9,7 @@ const SocketProvider = () => {
 
     useEffect(()=>{
         if(!user?._id){
-            console.log("user not ready",user)
+            // console.log("user not ready",user)
             return
         }
         const socket = getSocket()

@@ -4,18 +4,14 @@ import userModel from "../models/usermodel.js";
 import { Response } from "../utils/responsehandler.js";
 import { GoogleGenAI } from "@google/genai";
 
-
-const genAI = new GoogleGenAI({apiKey:process.env.GEMINI_API_KEY})
+const genAI = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
 export const AIChat = async (req, res) => {
   try {
     const userId = req.user;
-    const { projectId, question } = req.body;
-    if (!projectId || !question.trim()) {
-      return Response(res, 400, "projectId and question is required");
-    }
-    if (question.length > 200) {
-      return Response(res,400,"Question too long. Max 200 characters allowed.",);
+    const { projectId, type } = req.body;
+    if (!projectId || !type.trim()) {
+      return Response(res, 400, "projectId and type is required");
     }
     const user = await userModel.findById(userId);
     if (!user) {
@@ -26,7 +22,11 @@ export const AIChat = async (req, res) => {
       return Response(res, 404, "Project not found");
     }
     if (project.userId.toString() !== userId) {
-      return Response(res,403,"You are not authorized to access this project",);
+      return Response(
+        res,
+        403,
+        "You are not authorized to access this project",
+      );
     }
     // basic analytics
     // last 24 hours requests
@@ -107,7 +107,32 @@ export const AIChat = async (req, res) => {
       { $sort: { avgLatency: -1 } },
       { $limit: 3 },
     ]);
+    // type based prompt
+    let focusInstruction = "";
+    switch (type) {
+      case "insight":
+        focusInstruction = "Give overall API insights and summary.";
+        break;
 
+      case "performance":
+        focusInstruction = "Focus on latency and performance issues.";
+        break;
+
+      case "errors":
+        focusInstruction = "Analyze errors and possible causes.";
+        break;
+
+      case "traffic":
+        focusInstruction = "Analyze traffic and most used endpoints.";
+        break;
+
+      case "recommendation":
+        focusInstruction = "Give actionable optimization suggestions.";
+        break;
+
+      default:
+        focusInstruction = "Give general insights.";
+    }
     const aiPrompt = `
    You are Pulse AI, an API monitoring assistant.
    Project statistics:
@@ -116,38 +141,33 @@ export const AIChat = async (req, res) => {
    Error Count (last 24h): ${errorCount}
    Error Rate: ${errorRate}%
    Average Latency: ${avgLatency} ms
-
    Top Endpoints:${JSON.stringify(endpoints, null, 2)}
    Slow Endpoints:${JSON.stringify(slowEndpoints, null, 2)}
-  
-   User Question:${question}
-   Analyze the API monitoring data and provide helpful insights
-   If there are performance issues, explain the possible reasons and suggest improvements.
-   Provide insights in this format:
-   Insight: 
-   Recommendation:
-   Rules:
-  - Keep response under 120 words
-  - Use short bullet points
-  - Avoid long paragraphs
+   Instruction:
+   ${focusInstruction}
+  Respond in this format:
+  Insight:
+  - Use 2-4 bullet points
+  Recommendation:
+  - Use 2-4 bullet points
+  Rules:
+  - Max 120 words
+  - No paragraph 
+  - only bullet points
+  - Clear & concise
      `;
-       const response = await genAI.models.generateContent({
+    const response = await genAI.models.generateContent({
       model: "gemini-2.5-flash",
       contents: [{ role: "user", parts: [{ text: aiPrompt }] }],
       temperature: 0.7, // creativity control
       max_output_tokens: 180,
-      })
-    const reply = response?.candidates?.[0]?.content?.parts?.[0]?.text || "Sorry, I cannot answer that."
-    return Response(res, 200, "AI response", { role:"system",reply });
+    });
+    const reply =
+      response?.candidates?.[0]?.content?.parts?.[0]?.text ||
+      "Sorry, I cannot answer that.";
+    return Response(res, 200, "AI response", { role: "system", reply });
   } catch (error) {
     console.error("AI chat error", error);
     return Response(res, 500, "Internal server error");
   }
 };
-
-
-
-
-
-
-
