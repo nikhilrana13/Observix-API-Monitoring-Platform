@@ -10,6 +10,8 @@ import { useParams } from 'react-router-dom';
 import FiltersBar from './FilterBar';
 import LogsTable from './LogsTable';
 import { getSocket } from '../../config/socket';
+import ChatbotInterface from './ChatbotInterface';
+import { LuMessageCircleWarning } from 'react-icons/lu';
 
 const ProjectDetailsPage = () => {
   const { id } = useParams()
@@ -28,6 +30,7 @@ const ProjectDetailsPage = () => {
   const [page, setPage] = useState(1)
   const [pagination, setPagination] = useState({})
   const [newLogsCount, setNewLogsCount] = useState(0)
+  const [open,setOpen] = useState(false)
   // stats data
   const statsdata = [
     {
@@ -256,6 +259,22 @@ const ProjectDetailsPage = () => {
           {newLogsCount} new logs
         </div>
       )}
+      {/* chatbot */}
+      {
+        !open && (
+          <div className='fixed bottom-[4.5rem] left-6 z-[9999]'>
+        <button onClick={()=> setOpen(true)} className='w-[60px] hover:scale-110 transition h-[60px] cursor-pointer flex items-center  justify-center rounded-full bg-[#32075E] '>
+              <LuMessageCircleWarning className='text-white' size={29} />
+        </button>
+      </div>
+        )
+      }
+      {
+        open && (
+           <ChatbotInterface open={open} setOpen={setOpen} />
+        )
+      }
+
     </>
   );
 }
