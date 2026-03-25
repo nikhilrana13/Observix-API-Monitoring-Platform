@@ -2,7 +2,7 @@ import React from "react";
 
 const FeaturesSection = () => {
   return (
-    <section className="relative py-24 bg-[#07050d]">
+    <section id="features" className="relative py-24 bg-[#07050d]">
       <div className="max-w-7xl mx-auto px-6">
         {/* heading */}
         <div className="text-center mb-20">

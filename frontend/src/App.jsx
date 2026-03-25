@@ -9,6 +9,9 @@ import Projects from './components/dashboardcomponents/Projects';
 import { Toaster } from 'sonner';
 import ProjectDetailsPage from './components/dashboardcomponents/ProjectDetailsPage';
 import SocketProvider from './components/common/SocketProvider';
+import ProtectedRoute from './components/common/ProtectedRoute';
+import Docs from './pages/Docs';
+
 
 const App = () => {
   return (
@@ -17,15 +20,19 @@ const App = () => {
       <SocketProvider />
       <Routes>
         <Route path="/" element={<HomePage />} />
+        <Route path='/docs' element={<Docs />} />
         <Route path='/signup' element={<SignUp />} /> 
         <Route path='/login' element={<Login />} />
 
+
         {/* dashboard routes */}
+        <Route element={<ProtectedRoute />}>
         <Route path="/observix" element={<DashboardLayout />}>
         <Route index element={<Navigate to="dashboard" replace />} /> 
         <Route path='dashboard' element={<Dashboard />} />
         <Route path='projects' element={<Projects />} /> 
         <Route path='project/details/:id' element={<ProjectDetailsPage />} />
+        </Route>
         </Route>
       </Routes>
       <Toaster />

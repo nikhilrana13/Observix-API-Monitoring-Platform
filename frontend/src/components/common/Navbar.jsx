@@ -17,6 +17,10 @@ const Navbar = () => {
             : ""
             }`
     }
+    const scrollToSection = (id) => {
+        const el = document.getElementById(id);
+        el?.scrollIntoView({ behavior: "smooth" });
+    };
     return (
         <>
             <header className='px-6  bg-[#07050d] text-white  w-full sticky top-0 z-[100]  md:px-16 lg:px-30 py-2'>
@@ -38,10 +42,15 @@ const Navbar = () => {
                             <NavLink to="/" className={navlinkClass("/")}>Home</NavLink>
                         </li>
                         <li>
-                            <NavLink to="/features" className={navlinkClass("/features")}>Features</NavLink>
+                            <NavLink to="/docs" className={navlinkClass("/docs")}>Docs</NavLink>
                         </li>
                         <li>
-                            <NavLink to="/docs" className={navlinkClass("/docs")}>Docs</NavLink>
+                            <button
+                                onClick={() => scrollToSection("features")}
+                                className="text-gray-300 hover:text-white transition"
+                            >
+                                Features
+                            </button>
                         </li>
                     </ul>
                     {/* button */}
@@ -72,14 +81,20 @@ const Navbar = () => {
                     <li onClick={() => setOpen(false)}>
                         <NavLink to="/">Home</NavLink>
                     </li>
-                    <li onClick={() => setOpen(false)}>
-                        <NavLink to="/services">Features</NavLink>
+                    <li>
+                        <button
+                            onClick={() =>{scrollToSection("features"),setOpen(false)}}
+                            className="text-gray-300 hover:text-white transition"
+                        >
+                            Features
+                        </button>
                     </li>
+
                     <li onClick={() => setOpen(false)}>
                         <NavLink to="/aboutus">Docs</NavLink>
                     </li>
                     {
-                        !user  && (
+                        !user && (
                             <>
                                 <li>
                                     <Link to="/signup">Sign up</Link>
