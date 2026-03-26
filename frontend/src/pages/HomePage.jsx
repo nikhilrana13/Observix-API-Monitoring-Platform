@@ -1,6 +1,6 @@
 import React from 'react';
 import Navbar from '../components/common/Navbar';
-import HeroSection from '../components/pagescomponents/home/FeaturesSection';
+import HeroSection from '../components/pagescomponents/home/HeroSection';
 import TrustedSection from '../components/pagescomponents/home/TrustedSection';
 import MonitoringSection from '../components/pagescomponents/home/MonitoringSection';
 import FeaturesSection from '../components/pagescomponents/home/FeaturesSection';
