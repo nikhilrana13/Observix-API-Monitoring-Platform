@@ -12,6 +12,7 @@ const FiltersBar = ({setSelectmethod,setSelecttype,setSelectperiod}) => {
           <option value="PATCH">PATCH</option>
            <option value="DELETE">DELETE</option>
         </select>
+    
 
         <select onChange={(e)=>setSelecttype(e.target.value)}  className="bg-[#23104A] text-white text-sm px-3 py-2 rounded-md">
           <option>Select Type</option>
