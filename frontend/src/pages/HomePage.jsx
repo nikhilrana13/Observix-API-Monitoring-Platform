@@ -1,9 +1,9 @@
 import React from 'react';
 import Navbar from '../components/common/Navbar';
-import HeroSection from '../components/pagescomponents/home/heroSection';
-import TrustedSection from '../components/pagescomponents/home/TrustedSection';
-import MonitoringSection from '../components/pagescomponents/home/MonitoringSection';
-import FeaturesSection from '../components/pagescomponents/home/FeaturesSection';
+import HeroSection from '../components/pagesComponents/home/FeaturesSection';
+import TrustedSection from '../components/pagesComponents/home/TrustedSection';
+import MonitoringSection from '../components/pagesComponents/home/MonitoringSection';
+import FeaturesSection from '../components/pagesComponents/home/FeaturesSection';
 import Footer from '../components/common/Footer';
 
 

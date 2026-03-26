@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { HiMenu } from 'react-icons/hi';
 import { Outlet } from 'react-router-dom';
-import Sidebar from '../components/dashboardcomponents/Sidebar';
+import Sidebar from '../components/dashboardComponents/Sidebar';
 
 const DashboardLayout = () => {
     const [isOpen, setIsOpen] = useState(false)
