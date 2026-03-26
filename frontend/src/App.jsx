@@ -1,13 +1,13 @@
 import React from 'react';
 import HomePage from './pages/HomePage';
 import {Routes,Route, Navigate} from "react-router-dom"
-import SignUp from '@/components/common/SignUp';
+import SignUp from './components/common/SignUp';
 import Login from './components/common/Login';
 import DashboardLayout from './pages/DashboardLayout';
-import Dashboard from './components/dashboardcomponents/Dashboard';
-import Projects from './components/dashboardcomponents/Projects';
+import Dashboard from './components/dashboardComponents/Dashboard';
+import Projects from './components/dashboardComponents/Projects';
 import { Toaster } from 'sonner';
-import ProjectDetailsPage from './components/dashboardcomponents/ProjectDetailsPage';
+import ProjectDetailsPage from './components/dashboardComponents/ProjectDetailsPage';
 import SocketProvider from './components/common/SocketProvider';
 import ProtectedRoute from './components/common/ProtectedRoute';
 import Docs from './pages/Docs';
