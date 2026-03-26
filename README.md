@@ -15,7 +15,7 @@ It provides real-time logs, analytics dashboards, and AI-powered insights to hel
 * 🤖 AI-powered insights & recommendations
 * 🔑 Simple API key-based integration
 * 🎯 Clean and responsive dashboard UI
-* ♾ Infinite scroll for smooth data loading (logs & projects)
+* ♾ Infinite scroll for seamless pagination and smooth data loading (logs & projects)
 * 🚀 Optimized APIs for high-performance analytics
 
 ---
