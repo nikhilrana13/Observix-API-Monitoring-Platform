@@ -1,6 +1,6 @@
 import axios from "axios"
 
-const OBSERVIX_API_URL = "http://localhost:4000/api/monitor"
+const OBSERVIX_API_URL = "https://observix-api-monitoring-platform-backend.onrender.com/api/monitor"
 
 export const observixMiddleware = (apiKey) => {
    return(req,res,next)=>{
