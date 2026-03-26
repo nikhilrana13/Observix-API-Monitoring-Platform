@@ -1,7 +1,7 @@
 import React from 'react';
 import HomePage from './pages/HomePage';
 import {Routes,Route, Navigate} from "react-router-dom"
-import SignUp from './components/common/SignUp.jsx';
+import SignUp from '@/components/common/SignUp';
 import Login from './components/common/Login';
 import DashboardLayout from './pages/DashboardLayout';
 import Dashboard from './components/dashboardcomponents/Dashboard';
