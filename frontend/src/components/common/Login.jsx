@@ -33,7 +33,7 @@ const Login = () => {
       }
     } catch (error) {
       console.error("Failed to login user", error)
-      toast.error(error?.response?.data?.message)
+      toast.error(error?.response?.data?.message || "Internal server error")
     } finally {
       setLoading(false)
     }
