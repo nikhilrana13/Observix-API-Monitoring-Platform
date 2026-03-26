@@ -17,7 +17,7 @@ const SocketProvider = () => {
          const joinRooms = ()=>{
             if(joinedRef.current) return // prevent duplicate join 
             joinedRef.current = true 
-            console.log("joining room")
+            // console.log("joining room")
 
             socket.emit("join-user",{
                 userId:user?._id
