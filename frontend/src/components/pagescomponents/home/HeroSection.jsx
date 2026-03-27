@@ -10,7 +10,6 @@ const HeroSection = () => {
       {/* subtle grid */}
       <div className="absolute inset-0 opacity-[0.04] bg-[linear-gradient(#ffffff_1px,transparent_1px),linear-gradient(to_right,#ffffff_1px,transparent_1px)] bg-[size:40px_40px]"></div>
       <div className="max-w-7xl mx-auto px-2 sm:px-6  py-24  relative">
-        {/* announcement badge */}
         <div className="flex justify-center mb-10">
           <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-[#6a2cff]/10 border border-[#6a2cff]/20 text-sm text-[#c6b6ff]">
             <span></span>
