@@ -41,7 +41,7 @@ const CreateProjectDialog = ({ onClose, setProjects }) => {
         onClose()
     }
     return (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
+        <div className="fixed inset-0 z-[9999]  flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
             {/* BACKDROP */}
             <div
                 className="fixed inset-0 bg-[#161021]/60 backdrop-blur-sm"

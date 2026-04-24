@@ -274,7 +274,6 @@ const ProjectDetailsPage = () => {
            <ChatbotInterface open={open} setOpen={setOpen} />
         )
       }
-
     </>
   );
 }
