@@ -4,10 +4,10 @@ import {Routes,Route, Navigate} from "react-router-dom"
 import SignUp from './components/common/Signup';
 import Login from './components/common/Login';
 import DashboardLayout from './pages/DashboardLayout';
-import Dashboard from './components/dashboardcomponents/Dashboard';
-import Projects from './components/dashboardcomponents/Projects';
+import Dashboard from './components/dashboard/Dashboard';
+import Projects from './components/project/Projects';
 import { Toaster } from 'sonner';
-import ProjectDetailsPage from './components/dashboardcomponents/ProjectDetailsPage';
+import ProjectDetailsPage from './components/project/ProjectDetailsPage';
 import SocketProvider from './components/common/SocketProvider';
 import ProtectedRoute from './components/common/ProtectedRoute';
 import Docs from './pages/Docs';

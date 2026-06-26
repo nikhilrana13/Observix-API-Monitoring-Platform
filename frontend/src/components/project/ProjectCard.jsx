@@ -4,10 +4,10 @@ import { BsGraphUpArrow } from "react-icons/bs";
 import { formatRelativeTime } from "../../utils/Formaters";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
 import AppleToggle from "./AppleToggle";
+import {useToggleProjectStatusMutation } from "@/redux/api/ProjectApi";
 
-const ProjectCard = ({ project, setProjects }) => {
+const ProjectCard = ({ project,setAllProjects}) => {
     const [toggleId, setToggleId] = useState(null)
     const navigate = useNavigate()
     const copyApiKey = async () => {
@@ -25,29 +25,22 @@ const ProjectCard = ({ project, setProjects }) => {
     const handleClick = (id) => {
         navigate(`/observix/project/details/${id}`)
     }
+    const [ToggleProjectStatus] = useToggleProjectStatusMutation()
     const handleToggleProjectStatus = async (projectid, currentStatus) => {
         try {
             setToggleId(projectid)
             const newStatus = currentStatus === "active" ? "inactive" : "active";
             const id = String(projectid)
-            const response = await axios.put(`${import.meta.env.VITE_BACKEND_URL}/api/project/status/${id}`, {
-                status: newStatus
-            }, {
-                headers: {
-                    Authorization: `Bearer ${localStorage.getItem("token")}`
-                }
-            })
-            if (response?.data?.status === "success") {
-                toast.success(response?.data?.message)
-                setProjects((prev) => prev.map((project) => project._id === projectid ? { ...project, status: newStatus } : project))
-            }
+            const response = await ToggleProjectStatus({id,status:newStatus}).unwrap()
+            toast.success(response?.message)
+            setAllProjects((prev) => prev.map((project) => project._id === projectid ? { ...project, status: newStatus } : project))
         } catch (error) {
             console.log("failed to toggle project status", error)
-            toast.error(error?.response?.data?.message || "Internal server error")
+            toast.error(error?.data?.message || "Internal server error")
+        }finally{
+            setToggleId(null)
         }
     }
-
-
     return (
         <div className="group relative bg-[#1A102C] border border-[#6a4dff]/20 rounded-2xl p-5 overflow-hidden hover:shadow-xl transition-all duration-500">
             {/* Glow effect */}

@@ -50,10 +50,12 @@ export const EachProjectAnalyticsStats = async (req, res) => {
       ? ((successRequests / totalrequests24h) * 100).toFixed(2)
       : 0;
     return Response(res, 200, "Analytics fetched", {
-      totalrequests24h,
-      avgLatency,
-      errorCount,
-      successRate,
+      stats: {
+        totalrequests24h,
+        avgLatency,
+        errorCount,
+        successRate,
+      },
     });
   } catch (error) {
     console.error("failed to get analytics stats", error);
@@ -70,7 +72,7 @@ export const DashboardOverview = async (req, res) => {
     if (!projects.length) {
       return Response(res, 200, "No projects found", {});
     }
-    const projectIds = projects.map(p => p._id);
+    const projectIds = projects.map((p) => p._id);
     const last24Hours = new Date(Date.now() - 24 * 60 * 60 * 1000);
     const [
       totalRequests,
@@ -78,75 +80,75 @@ export const DashboardOverview = async (req, res) => {
       latencyAgg,
       requestsGraph,
       latencyGraph,
-      endpoints,
+      endPoints,
       errorDistRaw,
-      totalErrors
+      totalErrors,
     ] = await Promise.all([
       // total requests
       ApiLog.countDocuments({ projectId: { $in: projectIds } }),
       // error count
       ApiLog.countDocuments({
         projectId: { $in: projectIds },
-        statusCode: { $gte: 500 }
+        statusCode: { $gte: 500 },
       }),
       // avg latency
       ApiLog.aggregate([
         { $match: { projectId: { $in: projectIds } } },
-        { $group: { _id: null, avgLatency: { $avg: "$responseTime" } } }
+        { $group: { _id: null, avgLatency: { $avg: "$responseTime" } } },
       ]),
       // requests graph
       ApiLog.aggregate([
         {
           $match: {
             projectId: { $in: projectIds },
-            timestamp: { $gte: last24Hours }
-          }
+            timestamp: { $gte: last24Hours },
+          },
         },
         {
           $group: {
             _id: {
               hour: {
-                $hour: { date: "$timestamp", timezone: "Asia/Kolkata" }
-              }
+                $hour: { date: "$timestamp", timezone: "Asia/Kolkata" },
+              },
             },
-            requests: { $sum: 1 }
-          }
+            requests: { $sum: 1 },
+          },
         },
         {
           $project: {
             _id: 0,
             hour: "$_id.hour",
-            requests: 1
-          }
+            requests: 1,
+          },
         },
-        { $sort: { hour: 1 } }
+        { $sort: { hour: 1 } },
       ]),
       // latency graph
       ApiLog.aggregate([
         {
           $match: {
             projectId: { $in: projectIds },
-            timestamp: { $gte: last24Hours }
-          }
+            timestamp: { $gte: last24Hours },
+          },
         },
         {
           $group: {
             _id: {
               hour: {
-                $hour: { date: "$timestamp", timezone: "Asia/Kolkata" }
-              }
+                $hour: { date: "$timestamp", timezone: "Asia/Kolkata" },
+              },
             },
-            avgLatency: { $avg: "$responseTime" }
-          }
+            avgLatency: { $avg: "$responseTime" },
+          },
         },
         {
           $project: {
             _id: 0,
             hour: "$_id.hour",
-            avgLatency: 1
-          }
+            avgLatency: 1,
+          },
         },
-        { $sort: { hour: 1 } }
+        { $sort: { hour: 1 } },
       ]),
       // top endpoints
       ApiLog.aggregate([
@@ -158,10 +160,10 @@ export const DashboardOverview = async (req, res) => {
             avgLatency: { $avg: "$responseTime" },
             errorCount: {
               $sum: {
-                $cond: [{ $gte: ["$statusCode", 500] }, 1, 0]
-              }
-            }
-          }
+                $cond: [{ $gte: ["$statusCode", 500] }, 1, 0],
+              },
+            },
+          },
         },
         {
           $project: {
@@ -169,36 +171,38 @@ export const DashboardOverview = async (req, res) => {
             endpoint: "$_id",
             totalRequests: 1,
             avgLatency: { $round: ["$avgLatency", 2] },
-            errorCount: 1
-          }
+            errorCount: 1,
+          },
         },
         { $sort: { totalRequests: -1 } },
-        { $limit: 4 }
+        { $limit: 4 },
       ]),
       // error distribution raw
       ApiLog.aggregate([
         {
           $match: {
             projectId: { $in: projectIds },
-            statusCode: { $gte: 400 }
-          }
+            statusCode: { $gte: 400 },
+          },
         },
         {
           $group: {
             _id: "$statusCode",
-            count: { $sum: 1 }
-          }
-        }
+            count: { $sum: 1 },
+          },
+        },
       ]),
       // total errors
       ApiLog.countDocuments({
         projectId: { $in: projectIds },
-        statusCode: { $gte: 400 }
-      })
+        statusCode: { $gte: 400 },
+      }),
     ]);
     // format values
     const avgLatency = latencyAgg.length ? latencyAgg[0].avgLatency : 0;
-    const successRate = totalRequests ? ((totalRequests - errorCount) / totalRequests * 100).toFixed(2) : 0;
+    const successRate = totalRequests
+      ? (((totalRequests - errorCount) / totalRequests) * 100).toFixed(2)
+      : 0;
     const statusMap = {
       400: "Bad Request",
       401: "Unauthorized",
@@ -208,22 +212,22 @@ export const DashboardOverview = async (req, res) => {
       502: "Bad Gateway",
       503: "Service Unavailable",
     };
-    const errorDistribution = errorDistRaw.map(item => ({
+    const errorDistribution = errorDistRaw.map((item) => ({
       statusCode: item._id,
       label: statusMap[item._id] || "Unknown Error",
-      percentage: Number(((item.count / totalErrors) * 100).toFixed(2))
+      percentage: Number(((item.count / totalErrors) * 100).toFixed(2)),
     }));
     return Response(res, 200, "Dashboard overview fetched", {
       stats: {
         totalRequests,
         errorCount,
         avgLatency,
-        successRate
+        successRate,
       },
       requestsGraph,
       latencyGraph,
-      endpoints,
-      errorDistribution
+      endPoints,
+      errorDistribution,
     });
   } catch (error) {
     console.error("Dashboard overview error:", error);
@@ -231,79 +235,61 @@ export const DashboardOverview = async (req, res) => {
   }
 };
 // slow endpoints detection
-export const SlowEndpoints = async (req,res)=>{
- try{
-  const userId = req.user
-  const user = await userModel.findById(userId)
-  if(!user){
-   return Response(res,403,"User not found")
+export const SlowEndpoints = async (req, res) => {
+  try {
+    const userId = req.user;
+    const user = await userModel.findById(userId);
+    if (!user) {
+      return Response(res, 403, "User not found");
+    }
+    const projects = await Project.find({ userId }).select("_id");
+    if (!projects.length) {
+      return Response(res, 200, "No projects found", []);
+    }
+    const projectIds = projects.map((p) => p._id);
+    const slowThreshold = 800;
+    const slowEndpoints = await ApiLog.aggregate([
+      {
+        $match: {
+          projectId: { $in: projectIds },
+        },
+      },
+      {
+        $group: {
+          _id: "$endpoint",
+          avgLatency: { $avg: "$responseTime" },
+          totalRequests: { $sum: 1 },
+          errorCount: {
+            $sum: {
+              $cond: [{ $gte: ["$statusCode", 500] }, 1, 0],
+            },
+          },
+        },
+      },
+      {
+        $match: {
+          avgLatency: { $gte: slowThreshold },
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          endpoint: "$_id",
+          avgLatency: { $round: ["$avgLatency", 2] },
+          totalRequests: 1,
+          errorCount: 1,
+        },
+      },
+      {
+        $sort: { avgLatency: -1 },
+      },
+      {
+        $limit: 5,
+      },
+    ]);
+    return Response(res, 200, "Slow endpoints fetched", { slowEndpoints });
+  } catch (error) {
+    console.error("Slow endpoints error:", error);
+    return Response(res, 500, "Internal server error");
   }
-  const projects = await Project.find({ userId }).select("_id")
-  if(!projects.length){
-   return Response(res,200,"No projects found",[])
-  }
-  const projectIds = projects.map(p => p._id)
-  const slowThreshold = 800
-  const slowEndpoints = await ApiLog.aggregate([
-   {
-    $match:{
-     projectId:{ $in: projectIds }
-    }
-   },
-   {
-    $group:{
-     _id:"$endpoint",
-     avgLatency:{ $avg:"$responseTime" },
-     totalRequests:{ $sum:1 },
-     errorCount:{
-      $sum:{
-       $cond:[
-        { $gte:["$statusCode",500] },
-        1,
-        0
-       ]
-      }
-     }
-    }
-   },
-   {
-    $match:{
-     avgLatency:{ $gte: slowThreshold }
-    }
-   },
-   {
-    $project:{
-     _id:0,
-     endpoint:"$_id",
-     avgLatency:{ $round:["$avgLatency",2] },
-     totalRequests:1,
-     errorCount:1
-    }
-   },
-   {
-    $sort:{ avgLatency:-1 }
-   },
-   {
-    $limit:5
-   }
-  ])
-  return Response(res,200,"Slow endpoints fetched",{slowEndpoints})
-
- }catch(error){
-  console.error("Slow endpoints error:",error)
-  return Response(res,500,"Internal server error")
- }
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
+};

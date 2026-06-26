@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { HiMenu } from 'react-icons/hi';
 import { Outlet } from 'react-router-dom';
-import Sidebar from '../components/dashboardcomponents/Sidebar';
+import Sidebar from '../components/dashboard/Sidebar';
 
 const DashboardLayout = () => {
     const [isOpen, setIsOpen] = useState(false)
+    const contentRef = useRef(null);
     return (
         <div className="w-full  ">
             {/* Navbar */}
@@ -54,8 +55,8 @@ const DashboardLayout = () => {
                     />
                 )}
                 {/* Content */}
-                <div className="w-full lg:w-[80%] bg-[#FAFAFA] pt-[75px] overflow-y-auto h-screen ">
-                    <Outlet />
+                <div ref={contentRef} className="w-full lg:w-[80%] bg-[#FAFAFA] pt-[75px] overflow-y-auto h-screen ">
+                    <Outlet context={{contentRef}} />
                 </div>
             </div>
         </div>

@@ -1,3 +1,4 @@
+import { useCreateProjectMutation } from '@/redux/api/ProjectApi';
 import axios from 'axios';
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -5,43 +6,36 @@ import { IoMdClose } from 'react-icons/io';
 import { RotatingLines } from 'react-loader-spinner';
 import { toast } from 'sonner';
 
-const CreateProjectDialog = ({ onClose, setProjects }) => {
-    const [loading, setLoading] = useState(false)
+const CreateProjectDialog = ({ onClose,onProjectCreated}) => {
     const { register, handleSubmit, reset, formState: { errors } } = useForm()
+    const [CreateProject,{isLoading}] = useCreateProjectMutation()
+
+    
     // handle add project 
     const handleCreateProject = async (data) => {
-        if (loading) return;
+        if (isLoading) return;
         const formdata = {
             name:data.name.trim(),
             baseUrl:data.baseUrl.trim(),
             environment:data.environment
         }
         try {
-            setLoading(true)
-            const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/project/create-project`,formdata, {
-                headers: {
-                    Authorization: `Bearer ${localStorage.getItem("token")}`
-                }
-            })
-            if (response.data) {
-                const newProject = response?.data?.data?.project
-                setProjects((prev) => [newProject, ...prev])
-                toast.success(response?.data?.message)
-                reset()
-                onClose()
-            }
+             const response = await  CreateProject(formdata).unwrap()
+             onProjectCreated(response?.data?.project);
+             toast.success(response?.message)
+             reset()
+             onClose()
         } catch (error) {
             console.error("failed to create project", error)
-            toast.error(error?.response?.data?.message || "Internal server error")
-        } finally {
-          setLoading(false)
-        }
+            toast.error(error?.data?.message || "Internal server error")
+        } 
     }
+
     const handleClose = () => {
         onClose()
     }
     return (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
+        <div className="fixed inset-0 z-[9999]  flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
             {/* BACKDROP */}
             <div
                 className="fixed inset-0 bg-[#161021]/60 backdrop-blur-sm"
@@ -120,11 +114,11 @@ const CreateProjectDialog = ({ onClose, setProjects }) => {
                     <div className="mt-8 flex flex-col gap-3">
                         <button
                             type="submit"
-                            disabled={loading}
+                            disabled={isLoading}
                             className="w-full cursor-pointer bg-[#5B13EC] hover:bg-[#5B13EC]/90 text-white px-4 py-3 rounded-xl font-semibold transition-all shadow-lg shadow-[#1337ec]/20 flex items-center justify-center gap-2"
                         >
                             {
-                                loading ? (
+                                isLoading ? (
                                     <RotatingLines
                                         visible={true}
                                         height="24"

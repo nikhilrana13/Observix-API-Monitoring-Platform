@@ -1,127 +1,85 @@
 import React, { useEffect, useRef, useState } from 'react';
-import StatsCardShimmer from './StatsCardShimmer';
-import StatsCard from './StatsCard';
+import StatsCardShimmer from '../dashboard/StatsCardShimmer';
+import StatsCard from '../dashboard/StatsCard';
 import { BsGraphUpArrow } from 'react-icons/bs';
 import { BiErrorCircle, BiTimer } from 'react-icons/bi';
 import { formatLatency, formatSuccessRate } from '@/utils/Formaters';
 import { FaRegCircleCheck } from 'react-icons/fa6';
-import axios from 'axios';
 import { useParams } from 'react-router-dom';
 import FiltersBar from './FilterBar';
 import LogsTable from './LogsTable';
 import { getSocket } from '../../config/socket';
-import ChatbotInterface from './ChatbotInterface';
+import ChatbotInterface from '../chatbot/ChatbotInterface';
 import { LuMessageCircleWarning } from 'react-icons/lu';
+import { useGetProjectLogsQuery, useGetProjectStatsQuery } from '@/redux/api/ProjectApi';
 
 const ProjectDetailsPage = () => {
   const { id } = useParams()
-  const [statsloading, setstatsLoading] = useState(false)
-  const [stats, setStats] = useState({
-    totalRequests: 0,
-    avgLatency: 0,
-    errorCount: 0,
-    successRate: ""
-  })
-  const [logsloading, setLogsloading] = useState(false)
   const [selectmethod, setSelectmethod] = useState("")
   const [selecttype, setSelecttype] = useState("")
   const [selectperiod, setSelectperiod] = useState("")
-  const [logs, setLogs] = useState([])
   const [page, setPage] = useState(1)
-  const [pagination, setPagination] = useState({})
+  
+  const statsQuery = useGetProjectStatsQuery(id)
+  const statsData = statsQuery?.data?.data
+  const statsloading = statsQuery?.isLoading
+  const [stats, setStats] = useState({})
+  const logsQuery = useGetProjectLogsQuery({
+    projectId:id,
+    page:page,
+    method:selectmethod,
+    type:selecttype,
+    period:selectperiod
+  })
+  const logsdata = logsQuery?.data?.data
+  const logsloading = logsQuery?.isLoading
+  const [logs, setLogs] = useState([])
+  const pagination = logsdata?.pagination || {}
   const [newLogsCount, setNewLogsCount] = useState(0)
   const [open,setOpen] = useState(false)
+    // console.log("stats",statsData)
+    // console.log("logs",logsdata)
+    // Fetch initial data using RTK Query
+    useEffect(() => {
+      if (!statsData?.stats || !logsdata?.logs) return;
+      setStats(statsData?.stats);
+      // logs
+      setLogs(logsdata?.logs)
+    }, [statsData,logsdata]);
+
+
+
   // stats data
   const statsdata = [
     {
       title: "Total Requests",
-      value: stats?.totalRequests || 0,
+      value: statsQuery.isError ? "--" : stats?.totalrequests24h ?? 0,
       icon: BsGraphUpArrow,
       gradient: "bg-[#23104A]",
       textColor: "text-[#5B13EC]"
     },
     {
       title: "Avg Response Time",
-      value: formatLatency(stats?.avgLatency || 0),
+      value: statsQuery.isError ? "--" : formatLatency(stats?.avgLatency) ?? 0,
       icon: BiTimer,
       gradient: "bg-[#23104A]",
       textColor: "text-[#5B13EC]"
     },
     {
       title: "Error Count",
-      value: stats?.errorCount || 0,
+      value: statsQuery.isError ? "--" : stats?.errorCount ?? 0,
       icon: BiErrorCircle,
       gradient: "bg-[#301431]",
       textColor: "text-[#F43F5E]"
     },
     {
       title: "Success Rate",
-      value: formatSuccessRate(stats?.successRate || 0),
+      value: statsQuery.isError ? "--" : formatSuccessRate(stats?.successRate) ?? 0,
       icon: FaRegCircleCheck,
       gradient: "bg-[#192134]",
       textColor: "text-[#10B981]"
     },
   ]
-  //fetch project stats cards
-  useEffect(() => {
-    const fetchStats = async () => {
-      if (!id) return;
-      try {
-        setstatsLoading(true)
-        const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/analytics/project/${id}/overview`, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`
-          }
-        })
-        // console.log("response",response.data)
-        if (response.data) {
-          const totalRequests = response?.data?.data?.totalrequests24h
-          const avgLatency = response?.data?.data?.avgLatency
-          const errorCount = response?.data?.data?.errorCount
-          const successRate = response?.data?.data?.successRate
-          setStats((prev) => ({ ...prev, totalRequests, avgLatency, errorCount, successRate }))
-        }
-
-      } catch (error) {
-        console.error("failed to fetch stats", error)
-      } finally {
-        setstatsLoading(false)
-      }
-    }
-    fetchStats()
-  }, [id])
-  // fetch api logs 
-  useEffect(() => {
-    const fetchLogs = async () => {
-      if (!id) return;
-      try {
-        setLogsloading(true)
-        const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/logs`, {
-          params: {
-            projectId: id,
-            page: page,
-            method: selectmethod,
-            type: selecttype,
-            period: selectperiod,
-          }, headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`
-          }
-        })
-        // console.log('Response',response.data)
-        if (response.data) {
-          const logs = response?.data?.data?.logs
-          const pagination = response?.data?.data?.pagination
-          setLogs(logs)
-          setPagination(pagination)
-        }
-      } catch (error) {
-        console.error("failed to fetch logs", error)
-      } finally {
-        setLogsloading(false)
-      }
-    }
-    fetchLogs()
-  }, [id, page, selectmethod, selectperiod, selecttype])
   useEffect(() => {
     setPage(1)
   }, [selectmethod, selecttype, selectperiod])
@@ -135,12 +93,12 @@ const ProjectDetailsPage = () => {
       setStats((prev) => {
         const safeLatency = Number(log.responseTime) || 0;
         const safePrevLatency = Number(prev.avgLatency) || 0;
-        const total = prev.totalRequests + 1;
+        const total = prev.totalrequests24h + 1;
         const errors = log.statusCode >= 500 ? prev.errorCount + 1 : prev.errorCount;
-        const newAvg = (safePrevLatency * prev.totalRequests + safeLatency) / total;
+        const newAvg = (safePrevLatency * prev.totalrequests24h + safeLatency) / total;
         return {
           ...prev,
-          totalRequests: total,
+          totalrequests24h: total,
           errorCount: errors,
           avgLatency: isNaN(newAvg) ? 0 : newAvg,
           successRate:
@@ -274,7 +232,6 @@ const ProjectDetailsPage = () => {
            <ChatbotInterface open={open} setOpen={setOpen} />
         )
       }
-
     </>
   );
 }

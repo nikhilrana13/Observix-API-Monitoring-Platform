@@ -1,4 +1,3 @@
-import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 import { BiErrorCircle, BiTimer } from 'react-icons/bi';
 import { useSelector } from 'react-redux';
@@ -8,86 +7,81 @@ import { BsGraphUpArrow } from 'react-icons/bs';
 import { FaRegCircleCheck } from 'react-icons/fa6';
 import { formatLatency, formatSuccessRate, normalizeLatency, normalizeRequests } from '../../utils/Formaters';
 import RequestsGraph from './RequestsGraph';
-import ChartShimmer from './ChartShimmer';
+import ChartShimmer from '../chatbot/ChartShimmer';
 import LatencyGraph from './LatencyGraph';
 import ErrorDistributionCard from './ErrorDistributionCard';
 import ErrorDistributionShimmer from './ErrorDistributionShimmer';
 import TopEndpointsCard from './TopEndPointsCard';
 import TopEndpointsShimmer from './TopEndPointShimmer';
 import { getSocket } from '@/config/socket';
+import { useGetDashboardStatsQuery } from '@/redux/api/DashboardApi';
 
 const Dashboard = () => {
-  const [loading, setLoading] = useState(false)
-  const [stats, setStats] = useState({
-    totalRequests: 0,
-    errorCount: 0,
-    avgLatency: 0,
-    successRate: ""
-  })
-  const [requests, setRequests] = useState([])
-  const [avglatency, setAvgLatency] = useState([])
-  const [errordistribution, setErrorDistribution] = useState([])
-  const [topendpoints, setTopendPoints] = useState([])
   const user = useSelector((state) => state.Auth.user)
+  const statsQuery = useGetDashboardStatsQuery()
+  const dashboardData = statsQuery?.data?.data
+  const loading = statsQuery?.isLoading || statsQuery.isFetching;
+  const [stats, setStats] = useState({});
+  const [requests, setRequests] = useState([]);
+  const [avgLatency, setAvgLatency] = useState([]);
+  const [errorDistribution, setErrorDistribution] = useState([]);
+  const [topEndpoints, setTopEndpoints] = useState([]);
+  // console.log("dashboard data", dashboardData)
+
+  // Fetch initial dashboard data using RTK Query
+  useEffect(() => {
+    if (!dashboardData) return;
+    setStats(dashboardData?.stats);
+    setRequests(
+      normalizeRequests(dashboardData?.requestsGraph)
+    );
+    setAvgLatency(
+      normalizeLatency(dashboardData.latencyGraph)
+    );
+    setErrorDistribution(
+      [...dashboardData?.errorDistribution].sort(
+        (a, b) => b.percentage - a.percentage
+      )
+    );
+    setTopEndpoints(
+      dashboardData?.endPoints
+    );
+  }, [dashboardData]);
+
+
   // stats data
   const statsdata = [
     {
       title: "Total Requests",
-      value: stats?.totalRequests || 0,
+      value: statsQuery.isError ? "--" : stats?.totalRequests ?? 0,
       icon: BsGraphUpArrow,
       gradient: "bg-[#23104A]",
       textColor: "text-[#5B13EC]"
     },
     {
       title: "Error Count",
-      value: stats?.errorCount || 0,
+      value: statsQuery.isError ? "--" : stats?.errorCount ?? 0,
       icon: BiErrorCircle,
       gradient: "bg-[#301431]",
       textColor: "text-[#F43F5E]"
     },
     {
       title: "Avg Response Time",
-      value: formatLatency(stats?.avgLatency || 0),
+      value: statsQuery.isError ? "--" : formatLatency(stats?.avgLatency) ?? 0,
       icon: BiTimer,
       gradient: "bg-[#23104A]",
       textColor: "text-[#5B13EC]"
     },
     {
       title: "Success Rate",
-      value: formatSuccessRate(stats?.successRate || 0),
+      value: statsQuery.isError ? "--" : formatSuccessRate(stats?.successRate) ?? 0,
       icon: FaRegCircleCheck,
       gradient: "bg-[#192134]",
       textColor: "text-[#10B981]"
     },
   ]
-  // fetch dashboard overview stats
-  useEffect(() => {
-    const fetchDashboardoverview = async () => {
-      try {
-        setLoading(true)
-        const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/analytics/dashboard/overview`, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`
-          }
-        })
-        const data = response?.data?.data
-        if (data) {
-          setStats(data?.stats);
-          setRequests(normalizeRequests(data?.requestsGraph));
-          setAvgLatency(normalizeLatency(data?.latencyGraph))
-          setTopendPoints(data?.endpoints)
-          setErrorDistribution(data?.errorDistribution.sort((a, b) => b.percentage - a.percentage))
-        }
-      } catch (error) {
-        console.error("Failed to fetch dashboard overview", error);
-      } finally {
-        setLoading(false)
-      }
-    }
-    fetchDashboardoverview()
-  }, [])
   // console.log("top end points", topendpoints)
-  // live socket logs data
+  // Listen for real-time dashboard updates via Socket.IO
   useEffect(() => {
     const socket = getSocket();
     socket.on("new-api-log", (log) => {
@@ -96,6 +90,7 @@ const Dashboard = () => {
       if (!log?.endpoint || log.endpoint.includes("/api/analytics")) return;
       // stats
       setStats((prev) => {
+        if (!prev) return prev;
         const safeLatency = Number(log.responseTime) || 0;
         const safePrevLatency = Number(prev.avgLatency) || 0;
         const total = prev.totalRequests + 1;
@@ -142,7 +137,7 @@ const Dashboard = () => {
       });
       // Error distribution update
       if (log.statusCode >= 400) {
-        setErrorDistribution((prev) => {
+        setErrorDistribution((prev = []) => {
           const map = new Map();
           prev.forEach((e) => {
             map.set(e.code || e.statusCode, e.count || 0);
@@ -155,8 +150,9 @@ const Dashboard = () => {
         });
       }
     });
+    // Update top endpoints whenever backend emits new rankings
     socket.on("top-endpoints-update", (data) => {
-      setTopendPoints(data?.endpoints);
+      setTopEndpoints(data?.endpoints);
     });
     return () => {
       socket.off("new-api-log");
@@ -195,7 +191,7 @@ const Dashboard = () => {
             loading ? (
               <ChartShimmer />
             ) : (
-              <LatencyGraph latencyData={avglatency} />
+              <LatencyGraph latencyData={avgLatency} />
             )
           }
         </div>
@@ -205,7 +201,7 @@ const Dashboard = () => {
             loading ? (
               <ErrorDistributionShimmer />
             ) : (
-              <ErrorDistributionCard errors={errordistribution} />
+              <ErrorDistributionCard errors={errorDistribution} />
             )
           }
           {/* top end points */}
@@ -213,7 +209,7 @@ const Dashboard = () => {
             loading ? (
               <TopEndpointsShimmer />
             ) : (
-              <TopEndpointsCard endpoints={topendpoints} />
+              <TopEndpointsCard endpoints={topEndpoints} />
             )
           }
         </div>

@@ -91,7 +91,7 @@ const Navbar = () => {
                     </li>
 
                     <li onClick={() => setOpen(false)}>
-                        <NavLink to="/aboutus">Docs</NavLink>
+                        <NavLink to="/docs">Docs</NavLink>
                     </li>
                     {
                         !user && (
