@@ -5,7 +5,7 @@ import { Response } from "../utils/responsehandler.js"
 export const isAuth = async(req,res,next)=>{
       const authheader = req.headers.authorization 
         if(!authheader || !authheader.startsWith("Bearer ")){
-            return Response(res,404,"Unauthorized token missing")
+            return Response(res,401,"Unauthorized token missing")
         }
         try {
                 const token = authheader.split(" ")[1]

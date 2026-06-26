@@ -1,19 +1,21 @@
+import { useAskAIMutation } from '@/redux/api/ChatbotApi';
 import axios from 'axios';
 import React, { useEffect, useRef, useState } from 'react';
 import { IoIosCloseCircle } from 'react-icons/io';
 import { useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
+import { toast } from 'sonner';
 
 const ChatbotInterface = ({ open, setOpen }) => {
     const user = useSelector((state) => state.Auth.user)
     const [messages, setMessages] = useState([])
-    const [loading, setLoading] = useState(false)
+    const [askAI, { isLoading }] = useAskAIMutation();
     const bottomref = useRef()
     const { id } = useParams()
     // auto scroll on new message
     useEffect(() => {
         bottomref.current?.scrollIntoView({ behavior: "smooth" })
-    }, [messages, loading])
+    }, [messages, isLoading])
 
     const handleStaticQuestion = async (type) => {
         //  console.log("submit")
@@ -26,28 +28,16 @@ const ChatbotInterface = ({ open, setOpen }) => {
             recommendation: "Give recommendations"
         };
         // show user message
-        setMessages(prev => [...prev, { role: "user", message: labelMap[type] }])
-        setLoading(true)
+        setMessages(prev => [...prev, { role: "user", message: labelMap[type] }]) 
         try {
-            const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/ai/chatbot`, {
-                projectId: id,
-                type
-            }, {
-                headers: {
-                    Authorization: `Bearer ${localStorage.getItem("token")}`
-                }, withCredentials: true
-            }
-            )
+            const response = await askAI({projectId: id,type}).unwrap();
             // console.log("response", response.data)
-            const botdata = response.data.data
-            if (botdata) {
-                setMessages((prev) => [...prev, { role: botdata?.role, message: botdata?.reply }])
-            }
+            const botdata = response?.data
+            setMessages((prev) => [...prev, { role: botdata?.role, message: botdata?.reply }])
         } catch (error) {
             console.log("failed to send message", error)
-        } finally {
-            setLoading(false)
-        }
+            toast.error(error?.data?.message || "Internal server error")
+        } 
     }
     return (
         <div className={`fixed bottom-6 left-6 w-[360px] h-[500px] rounded-2xl overflow-hidden shadow-[0_20px_60px_rgba(0,0,0,0.5)] border border-white/10 backdrop-blur-xl bg-[#0F0B1E]/90 flex flex-col z-[9999] transition-all duration-300 
@@ -92,7 +82,7 @@ const ChatbotInterface = ({ open, setOpen }) => {
                     </div>
                 ))}
                 {/* typing */}
-                {loading && (
+                {isLoading && (
                     <div className="text-xs text-gray-400 animate-pulse">
                         🤖 AI is typing...
                     </div>
@@ -111,10 +101,10 @@ const ChatbotInterface = ({ open, setOpen }) => {
                         { label: "💡 Recommendations", type: "recommendation" },
                     ].map((item, i) => (
                         <button
-                            disabled={loading}
+                            disabled={isLoading}
                             key={i}
-                            onClick={() => !loading && handleStaticQuestion(item.type)}
-                            className={`text-[11px] px-3 py-1.5 rounded-full border transition-all ${loading
+                            onClick={() => !isLoading && handleStaticQuestion(item.type)}
+                            className={`text-[11px] px-3 py-1.5 rounded-full border transition-all ${isLoading
                                     ? "bg-[#2A2245] text-gray-500 cursor-not-allowed"
                                     : "bg-[#1C1635] border-[#5B13EC]/20 text-gray-300 hover:bg-[#5B13EC]/20 hover:text-white"
                                 }`}

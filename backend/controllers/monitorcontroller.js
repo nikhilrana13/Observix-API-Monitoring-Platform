@@ -6,6 +6,7 @@ import { Response } from "../utils/responsehandler.js";
 
 // monitor api and save data in db
 export const MonitorApi = async (req, res) => {
+  console.log("===== MonitorApi Called =====");
   try {
     const {
       apiKey,
@@ -44,6 +45,9 @@ export const MonitorApi = async (req, res) => {
     });
     // socket emit
     const io = getIo();
+    const room = `user-${project.userId}`;
+    // console.log("Room:", room);
+    // console.log("Clients in room:", io.sockets.adapter.rooms.get(room));
     // for live api logs
     io.to(`user-${project.userId}`).emit("new-api-log", {
       projectId: log.projectId,
@@ -56,6 +60,8 @@ export const MonitorApi = async (req, res) => {
       ip: log.ip,
       error: log.error,
     });
+    // console.log("EMITTING new-api-log");
+    // console.log("Socket rooms:", `user-${project.userId}`);
     // for top end points
     const topEndpoints = await ApiLog.aggregate([
       { $match: { projectId: project._id } },
@@ -63,12 +69,12 @@ export const MonitorApi = async (req, res) => {
         $group: {
           _id: "$endpoint",
           count: { $sum: 1 },
-          avgLatency:{$avg:"$responseTime"},
-          errorCount:{
-            $sum:{
-              $cond:[{$gte:["$statusCode",500]},1,0]
-            }
-          }
+          avgLatency: { $avg: "$responseTime" },
+          errorCount: {
+            $sum: {
+              $cond: [{ $gte: ["$statusCode", 500] }, 1, 0],
+            },
+          },
         },
       },
       { $sort: { count: -1 } },
@@ -78,8 +84,8 @@ export const MonitorApi = async (req, res) => {
       endpoints: topEndpoints.map((e) => ({
         endpoint: e._id,
         totalRequests: e.count,
-        avgLatency:Math.round(e.avgLatency || 0),
-        errorCount:e.errorCount
+        avgLatency: Math.round(e.avgLatency || 0),
+        errorCount: e.errorCount,
       })),
     });
     return Response(res, 200, "Log Captured");

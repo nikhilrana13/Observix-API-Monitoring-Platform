@@ -35,7 +35,7 @@ initializeSocket(server)
 app.use("/api/auth",authRoute)
 app.use("/api/project",projectRoute)
 app.use("/api/",monitorRoute)
-app.use("/api/analytics/",analyticsRoute)
+app.use("/api/analytics/",analyticsRoute) 
 app.use("/api/ai",ChatRoute) 
 
 // connect to db

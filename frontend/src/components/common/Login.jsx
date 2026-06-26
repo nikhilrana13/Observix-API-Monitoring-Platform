@@ -7,6 +7,7 @@ import { RotatingLines } from 'react-loader-spinner';
 import axios from 'axios';
 import { useDispatch } from 'react-redux';
 import { SetUser } from '../../redux/AuthSlice';
+import { api } from '@/services/api';
 
 const Login = () => {
   const [loading, setLoading] = useState(false)
@@ -22,18 +23,18 @@ const Login = () => {
     }
     try {
       setLoading(true)
-      const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/auth/login`, formdata)
-      if (response.data) {
-        toast.success(response?.data?.message)
-        const user = response?.data?.data?.user 
-        const token = response?.data?.data?.token
+      const response = await api.post("api/auth/login", formdata)
+      if (response) {
+        toast.success(response?.message)
+        const user = response?.data?.user 
+        const token = response?.data?.token
         localStorage.setItem("token",token)
         dispatch(SetUser(user))
         navigate("/observix/dashboard")
       }
     } catch (error) {
       console.error("Failed to login user", error)
-      toast.error(error?.response?.data?.message || "Internal server error")
+      toast.error(error?.data?.message || "Internal server error")
     } finally {
       setLoading(false)
     }

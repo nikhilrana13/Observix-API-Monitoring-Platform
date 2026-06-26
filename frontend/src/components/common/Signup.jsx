@@ -5,6 +5,7 @@ import { useForm } from 'react-hook-form';
 import axios from 'axios';
 import { toast } from 'sonner';
 import { RotatingLines } from 'react-loader-spinner';
+import { api } from '@/services/api';
 
 const SignUp = () => {
     const [loading, setLoading] = useState(false)
@@ -20,14 +21,14 @@ const SignUp = () => {
         }
         try {
             setLoading(true)
-            const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/auth/register`, formdata)
-            if (response.data) {
-                toast.success(response?.data?.message)
+            const response = await api.post("/api/auth/register",formdata)
+            if (response) {
+                toast.success(response?.message)
                 navigate("/login")
             }
         } catch (error) {
             console.error("Failed to sign up user", error)
-            toast.error(error?.response?.data?.message || "Internal server error")
+            toast.error(error?.data?.message || "Internal server error")
         } finally {
             setLoading(false)
         }
