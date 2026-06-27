@@ -68,7 +68,7 @@ npm install axios
 import axios from "axios";
 
 const OBSERVIX_API_URL =
-  "https://your-observix-api-url/api/monitor";
+  "https://observix-api-monitoring-platform-backend.onrender.com/api/monitor";
 
 export const observixMiddleware = (apiKey) => {
   return (req, res, next) => {
