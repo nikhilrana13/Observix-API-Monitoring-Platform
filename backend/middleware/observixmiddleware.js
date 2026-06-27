@@ -1,9 +1,18 @@
 import axios from "axios";
 
-const OBSERVIX_API_URL = "https://observix-api-monitoring-platform-backend.onrender.com/api/monitor";
+const OBSERVIX_API_URL =
+  "https://observix-api-monitoring-platform-backend.onrender.com/api/monitor";
 
 export const observixMiddleware = (apiKey) => {
   return (req, res, next) => {
+    // skip unwanted requests
+     if (
+      req.originalUrl.startsWith("/favicon.ico") ||
+      req.method === "OPTIONS" ||
+      req.method === "HEAD"
+    ) {
+      return next();
+    }
     const startTime = Date.now();
     res.on("finish", async () => {
       const responseTime = Date.now() - startTime;
@@ -31,6 +40,6 @@ export const observixMiddleware = (apiKey) => {
         });
       }
     });
-    next();
+    next()
   };
 };
