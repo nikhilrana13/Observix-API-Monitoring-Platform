@@ -1,38 +1,60 @@
-# 🚀 Observix — API Monitoring & Observability Platform
+# 🚀 Observix — Real-Time API Monitoring & Observability Platform
 
-Observix is a modern API monitoring and observability platform that helps developers track API performance, errors, and real-time activity with ease.
+Observix is a modern API monitoring and observability platform that enables developers to monitor API performance, analyze traffic, detect failures, and receive AI-powered insights in real time.
 
-It provides real-time logs, analytics dashboards, and AI-powered insights to help you understand and optimize your APIs.
+With a lightweight middleware integration, developers can start monitoring their APIs within minutes—without changing their existing application architecture.
 
 ---
 
-## ✨ Features
+# ✨ Features
 
-* 📊 Real-time API logs with WebSocket updates
+* 📊 Real-time API monitoring
 * ⚡ Live request & latency graphs
 * 🚨 Error tracking and distribution analysis
-* 📈 Top endpoints monitoring
-* 🤖 AI-powered insights & recommendations
-* 🔑 Simple API key-based integration
-* 🎯 Clean and responsive dashboard UI
-* ♾ Infinite scroll for seamless pagination and smooth data loading (logs & projects)
-* 🚀 Optimized APIs for high-performance analytics
+* 📈 Top endpoints analytics
+* 🔄 Real-time dashboard updates using Socket.IO
+* 🤖 AI-powered performance insights & recommendations
+* 🔑 API key-based project integration
+* 🐳 Docker-ready deployment
+* 📱 Fully responsive dashboard
+* ♾ Infinite scroll for logs and projects
+* 🚀 Optimized aggregation pipelines for analytics
+* 🔒 Secure project isolation using unique API keys
 
 ---
 
-## 🛠 Tech Stack
+# 🛠 Tech Stack
 
-* **Frontend:** React, Tailwind CSS
-* **Backend:** Node.js, Express
-* **Database:** MongoDB
-* **Realtime:** Socket.IO
-* **AI:** Gemini API
+### Frontend
+
+* React
+* Tailwind CSS
+* Redux Toolkit
+* RTK Query
+* Socket.IO Client
+* Recharts
+
+### Backend
+
+* Node.js
+* Express.js
+* MongoDB
+* Mongoose
+* Socket.IO
+* Redis
+* Gemini API
+
+### DevOps
+
+* Docker
+* Docker Compose
+* Render
 
 ---
 
-## ⚡ Quick Integration (2 Minutes Setup)
+# ⚡ Quick Integration (2 Minutes)
 
-### 1. Install dependency
+## 1. Install Axios
 
 ```bash
 npm install axios
@@ -40,36 +62,44 @@ npm install axios
 
 ---
 
-### 2. Create Observix Middleware
+## 2. Create Observix Middleware
 
-```js
+```javascript
 import axios from "axios";
 
-const OBSERVIX_API_URL = "https://api.observix.com/api/monitor";
+const OBSERVIX_API_URL =
+  "https://your-observix-api-url/api/monitor";
 
 export const observixMiddleware = (apiKey) => {
   return (req, res, next) => {
-    const startTime = Date.now();
+
+    if (
+      req.method === "HEAD" ||
+      req.method === "OPTIONS" ||
+      req.originalUrl.startsWith("/favicon.ico")
+    ) {
+      return next();
+    }
+
+    const start = Date.now();
 
     res.on("finish", async () => {
-      const responseTime = Date.now() - startTime;
-
-      const logData = {
-        apiKey,
-        endpoint: req.originalUrl,
-        method: req.method,
-        statusCode: res.statusCode,
-        responseTime,
-        ip: req.ip,
-        userAgent: req.headers["user-agent"],
-        timestamp: new Date(),
-      };
 
       try {
-        await axios.post(OBSERVIX_API_URL, logData);
+        await axios.post(OBSERVIX_API_URL, {
+          apiKey,
+          endpoint: req.originalUrl,
+          method: req.method,
+          statusCode: res.statusCode,
+          responseTime: Date.now() - start,
+          ip: req.ip,
+          userAgent: req.headers["user-agent"],
+          timestamp: new Date(),
+        });
       } catch (err) {
-        console.error("Observix Error:", err.message);
+        console.error(err.message);
       }
+
     });
 
     next();
@@ -79,82 +109,112 @@ export const observixMiddleware = (apiKey) => {
 
 ---
 
-### 3. Use in Your Express App
+## 3. Register Middleware
 
-```js
+```javascript
 import express from "express";
-import { observixMiddleware } from "./observix.js";
+import { observixMiddleware } from "./middleware/observix.js";
 
 const app = express();
 
-app.use(observixMiddleware("YOUR_API_KEY"));
+app.use(express.json());
 
-app.get("/", (req, res) => {
-  res.send("Hello World");
-});
+app.use(
+  observixMiddleware("YOUR_API_KEY")
+);
+```
 
-app.listen(3000, () => console.log("Server running"));
+That's it!
+
+Every incoming request will automatically be monitored.
+
+---
+
+# 🐳 Docker Integration
+
+Observix works seamlessly with Dockerized applications.
+
+Simply add the middleware to your Express server and rebuild your Docker image.
+
+```bash
+docker compose up --build
+```
+
+No additional Docker configuration is required.
+
+---
+
+# 🔑 Getting Your API Key
+
+1. Create an account.
+2. Create a new project.
+3. Copy the generated API Key.
+4. Pass the API Key to the Observix middleware.
+
+```javascript
+app.use(
+    observixMiddleware("pulse_xxxxxxxxxxxxx")
+);
 ```
 
 ---
 
-## 🔑 Getting API Key
+# 📊 Dashboard Analytics
 
-Create a project from your Observix dashboard.
-Once created, an API key will be automatically generated.
-Copy the key and use it in the middleware setup.
+Observix provides real-time analytics including:
 
----
-
-## 📊 What You Can Monitor
-
-* Total API requests
-* Response time (latency)
-* Error rates
-* Endpoint performance
-* Traffic trends
+* Total Requests
+* Average Response Time
+* Success Rate
+* Error Count
+* Request Timeline
+* Latency Timeline
+* Error Distribution
+* Top Requested Endpoints
 
 ---
 
-## 🤖 AI Insights
+# 🤖 AI Insights
 
-Observix provides AI-powered insights based on your API logs:
+Observix analyzes your API traffic and provides recommendations such as:
 
-* Detect performance bottlenecks
-* Identify slow endpoints
-* Suggest optimizations
-* Highlight anomalies
-
----
-
-## 🎯 Use Cases
-
-* Monitor production APIs
-* Debug performance issues
-* Track errors in real-time
-* Optimize backend systems
+* Slow endpoint detection
+* Performance bottlenecks
+* High error-rate analysis
+* Optimization suggestions
+* Traffic anomaly detection
 
 ---
 
-## 🌐 Live Demo
+# 🚀 Use Cases
 
-> Add your deployed link here (Vercel / Render / etc.)
-
----
-
-## 🤝 Contributing
-
-Contributions are welcome!
-Feel free to fork the repository and submit a pull request.
+* Production API Monitoring
+* Backend Performance Analysis
+* Error Detection
+* Debugging Slow APIs
+* Performance Optimization
+* Team Monitoring Dashboards
 
 ---
 
-## ⭐ Support
+# 🌐 Live Demo
+Live Link:["https://observix-api-monitoring-platform-frontend.onrender.com"]
+---
 
-If you like this project, give it a ⭐ on GitHub!
+# 🤝 Contributing
+
+Contributions are welcome.
+
+Feel free to fork the repository, create a feature branch, and submit a Pull Request.
 
 ---
 
-## 📜 License
+# ⭐ Support
+
+If you found this project useful, consider giving it a ⭐ on GitHub.
+
+---
+
+# 📄 License
 
 This project is licensed under the MIT License.
