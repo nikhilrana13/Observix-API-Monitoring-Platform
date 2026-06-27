@@ -1,0 +1,31 @@
+services:
+  backend:
+    build: ./backend 
+    ports:
+      - "4000:4000"
+    env_file:
+      - ./backend/.env 
+    volumes:
+       - ./backend:/backend 
+       - /backend/node_modules 
+  
+  frontend:
+    build: ./frontend 
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend 
+    env_file:
+      - ./frontend/.env 
+    volumes:
+       - ./frontend:/frontend 
+       - /frontend/node_modules 
+  
+  redis:
+       image: redis:latest 
+       container_name: observix_redis 
+       ports:
+         - "6379:6379" 
+       restart: unless-stopped
+      
+      

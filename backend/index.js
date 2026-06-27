@@ -10,6 +10,7 @@ import analyticsRoute from "./routes/anayticsroutes.js"
 import ChatRoute from "./routes/aichatbotroutes.js"
 import { initializeSocket } from "./config/socketservice.js"
 import http from "http"
+import { redisClient } from "./config/redis.js"
 
 dotenv.config()
 
@@ -42,6 +43,7 @@ app.use("/api/ai",ChatRoute)
 configure()
 
 
-server.listen(Port,(()=>{
+server.listen(Port,(async()=>{
     console.log(`server is running on ${Port}`)
+    await redisClient.connect()
 }))
