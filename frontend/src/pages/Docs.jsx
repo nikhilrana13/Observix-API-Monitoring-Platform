@@ -28,30 +28,39 @@ const Docs = () => {
 
   const middlewareCode = `import axios from "axios";
 
-const OBSERVIX_API_URL = "https://api.observix.com/api/monitor";
+const OBSERVIX_API_URL = "https://observix-api-monitoring-platform-backend.onrender.com/api/monitor";
 
 export const observixMiddleware = (apiKey) => {
   return (req, res, next) => {
-    const startTime = Date.now();
+    if (
+      req.method === "HEAD" ||
+      req.method === "OPTIONS" ||
+      req.originalUrl.startsWith("/favicon.ico")
+    ) {
+      return next();
+    }
+    const start = Date.now();
 
     res.on("finish", async () => {
-      const responseTime = Date.now() - startTime;
-
-      const logData = {
-        apiKey,
-        endpoint: req.originalUrl,
-        method: req.method,
-        statusCode: res.statusCode,
-        responseTime,
-        ip: req.ip,
-        userAgent: req.headers["user-agent"],
-        timestamp: new Date(),
-      };
 
       try {
-        await axios.post(OBSERVIX_API_URL, logData);
+        await axios.post(OBSERVIX_API_URL, {
+          apiKey,
+          endpoint: req.originalUrl,
+          method: req.method,
+          statusCode: res.statusCode,
+          responseTime: Date.now() - start,
+          ip: req.ip,
+          userAgent: req.headers["user-agent"],
+          timestamp: new Date(),
+        });
       } catch (err) {
-        console.error("Observix Error:", err.message);
+        console.error({
+          message: error.message,
+          code: error.code,
+          status: error.response?.status,
+          data: error.response?.data,
+        });
       }
     });
 
