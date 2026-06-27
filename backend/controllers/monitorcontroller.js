@@ -20,7 +20,7 @@ export const MonitorApi = async (req, res) => {
     } = req.body;
     // check project by apiKey
     const project = await Project.findOne({ apiKey });
-    // console.log("apikey",apiKey)
+    console.log("apikey",apiKey)
     if (!project) {
       return Response(res, 404, "Invalid API key");
     }
@@ -61,7 +61,7 @@ export const MonitorApi = async (req, res) => {
       ip: log.ip,
       error: log.error,
     });
-    // console.log("EMITTING new-api-log");
+    console.log("EMITTING new-api-log");
     // console.log("Socket rooms:", `user-${project.userId}`);
     // for top end points
     const projects = await Project.find({ userId: project.userId }).select("_id");

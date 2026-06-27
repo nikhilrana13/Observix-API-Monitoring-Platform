@@ -1,13 +1,12 @@
-import axios from "axios"
+import axios from "axios";
 
-const OBSERVIX_API_URL = "http://localhost:4000/api/monitor"
+const OBSERVIX_API_URL = "https://observix-api-monitoring-platform-backend.onrender.com/api/monitor";
 
 export const observixMiddleware = (apiKey) => {
-   return(req,res,next)=>{
-    const startTime = Date.now()
-
-    res.on("finish", async ()=>{
-      const responseTime = Date.now() - startTime
+  return (req, res, next) => {
+    const startTime = Date.now();
+    res.on("finish", async () => {
+      const responseTime = Date.now() - startTime;
       const logData = {
         apiKey: apiKey,
         endpoint: req.originalUrl,
@@ -16,18 +15,22 @@ export const observixMiddleware = (apiKey) => {
         responseTime: responseTime,
         ip: req.ip || req.connection?.remoteAddress,
         userAgent: req.headers["user-agent"],
-        timestamp: new Date()
+        timestamp: new Date(),
+      };
+      try {
+        await axios.post(OBSERVIX_API_URL, logData, {
+          timeout: 10000,
+        });
+      } catch (error) {
+        console.error("Observix monitoring failed:", error.message);
+        console.error({
+          message: error.message,
+          code: error.code,
+          status: error.response?.status,
+          data: error.response?.data,
+        });
       }
-      try{
-        await axios.post(OBSERVIX_API_URL,logData,{
-          timeout:2000
-        })
-      }catch(error){
-        console.error("Observix monitoring failed:",error.message)
-      }
-    })
-    next()
-   }
-}
-
-
+    });
+    next();
+  };
+};
