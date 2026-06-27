@@ -26,7 +26,7 @@ const Dashboard = () => {
   const [avgLatency, setAvgLatency] = useState([]);
   const [errorDistribution, setErrorDistribution] = useState([]);
   const [topEndpoints, setTopEndpoints] = useState([]);
-  // console.log("dashboard data", dashboardData)
+  console.log("dashboard data", dashboardData)
 
   // Fetch initial dashboard data using RTK Query
   useEffect(() => {
@@ -36,15 +36,15 @@ const Dashboard = () => {
       normalizeRequests(dashboardData?.requestsGraph)
     );
     setAvgLatency(
-      normalizeLatency(dashboardData.latencyGraph)
+      normalizeLatency(dashboardData?.latencyGraph)
     );
     setErrorDistribution(
-      [...dashboardData?.errorDistribution].sort(
+      [...dashboardData?.errorDistribution ?? [] ].sort(
         (a, b) => b.percentage - a.percentage
       )
     );
     setTopEndpoints(
-      dashboardData?.endPoints
+      dashboardData?.endPoints ?? []
     );
   }, [dashboardData]);
 
@@ -53,34 +53,34 @@ const Dashboard = () => {
   const statsdata = [
     {
       title: "Total Requests",
-      value: statsQuery.isError ? "--" : stats?.totalRequests ?? 0,
+      value: statsQuery?.isError ? "--" : stats?.totalRequests ?? 0,
       icon: BsGraphUpArrow,
       gradient: "bg-[#23104A]",
       textColor: "text-[#5B13EC]"
     },
     {
       title: "Error Count",
-      value: statsQuery.isError ? "--" : stats?.errorCount ?? 0,
+      value: statsQuery?.isError ? "--" : stats?.errorCount ?? 0,
       icon: BiErrorCircle,
       gradient: "bg-[#301431]",
       textColor: "text-[#F43F5E]"
     },
     {
       title: "Avg Response Time",
-      value: statsQuery.isError ? "--" : formatLatency(stats?.avgLatency) ?? 0,
+      value: statsQuery?.isError ? "--" : formatLatency(stats?.avgLatency) ?? 0,
       icon: BiTimer,
       gradient: "bg-[#23104A]",
       textColor: "text-[#5B13EC]"
     },
     {
       title: "Success Rate",
-      value: statsQuery.isError ? "--" : formatSuccessRate(stats?.successRate) ?? 0,
+      value: statsQuery?.isError ? "--" : formatSuccessRate(stats?.successRate) ?? 0,
       icon: FaRegCircleCheck,
       gradient: "bg-[#192134]",
       textColor: "text-[#10B981]"
     },
   ]
-  // console.log("top end points", topendpoints)
+  // console.log("top end points", endpoints)
   // Listen for real-time dashboard updates via Socket.IO
   useEffect(() => {
     const socket = getSocket();

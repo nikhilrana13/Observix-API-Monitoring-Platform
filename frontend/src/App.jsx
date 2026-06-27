@@ -23,8 +23,6 @@ const App = () => {
         <Route path='/docs' element={<Docs />} />
         <Route path='/signup' element={<SignUp />} /> 
         <Route path='/login' element={<Login />} />
-
-
         {/* dashboard routes */}
         <Route element={<ProtectedRoute />}>
         <Route path="/observix" element={<DashboardLayout />}>

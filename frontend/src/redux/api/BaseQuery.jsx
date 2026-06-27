@@ -2,8 +2,8 @@ import { fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { logout } from "../AuthSlice";
 
 
- const baseQuery = fetchBaseQuery({
-    baseUrl:import.meta.env.VITE_BACKEND_URL,
+const baseQuery = fetchBaseQuery({
+    baseUrl: import.meta.env.VITE_BACKEND_URL,
     prepareHeaders: (headers) => {
         const token = localStorage.getItem("token");
         if (token) {
@@ -22,7 +22,9 @@ const baseQueryWithAuth = async (args, api, extraOptions) => {
         const isAuthApi = url?.includes("/api/auth/login");
         if (status === 401 && !isAuthApi) {
             // save current pathname
-           localStorage.setItem("lastPath", window.location.pathname); 
+            localStorage.setItem("lastPath", window.location.pathname);
+            const { resetAllApiCaches } = await import("@/utils/resetApiCache.js");
+            api.dispatch(resetAllApiCaches());
             localStorage.removeItem("token");
             api.dispatch(logout())
             window.dispatchEvent(new Event("unauthorized"));
@@ -31,5 +33,5 @@ const baseQueryWithAuth = async (args, api, extraOptions) => {
     return result;
 };
 
-export default baseQueryWithAuth 
-export {baseQuery}
+export default baseQueryWithAuth
+export { baseQuery }

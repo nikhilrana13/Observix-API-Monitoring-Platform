@@ -24,8 +24,8 @@ export const normalizeRequests = (data) => {
     requests: 0,
   }));
 
-  data.forEach((item) => {
-    fullDay[item.hour] = item;
+  data?.forEach((item) => {
+    fullDay[item?.hour] = item;
   });
 
   return fullDay;
@@ -36,8 +36,8 @@ export const normalizeLatency = (data) => {
     avgLatency: 0,
   }));
 
-  data.forEach((item) => {
-    fullDay[item.hour] = item;
+  data?.forEach((item) => {
+    fullDay[item?.hour] = item;
   });
 
   return fullDay;

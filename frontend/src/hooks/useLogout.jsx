@@ -1,12 +1,15 @@
+import { resetAllApiCaches } from '@/utils/resetApiCache';
 import { SetUser } from '../redux/AuthSlice';
 import axios from 'axios';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
+import { getSocket } from '@/config/socket';
 
 const useLogout = () => {
      const  navigate = useNavigate()
      const dispatch = useDispatch()
+     const socket = getSocket();
      
     const handleLogout = async()=>{
         try {
@@ -17,6 +20,8 @@ const useLogout = () => {
             })
             if(response.data){
                 toast.success(response?.data?.message)
+                dispatch(resetAllApiCaches())
+                socket.disconnect()
                 localStorage.removeItem("token")
                 dispatch(SetUser(null))
                 navigate("/")

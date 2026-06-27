@@ -115,7 +115,7 @@ const Projects = () => {
       {/* create project dialog */}
       {isCreateProjectOpen && (
         <CreateProjectDialog onClose={() => setisCreateprojectOpen(false)} onProjectCreated={(project) => {
-          setAllProjects((prev) => [project, ...prev]);
+          setAllProjects((prev = []) => [project, ...prev]);
         }}
         />
       )}
