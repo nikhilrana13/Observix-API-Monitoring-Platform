@@ -2,7 +2,7 @@ import mongoose from "mongoose"
 const apiLogSchema = new mongoose.Schema({
     projectId:{type:mongoose.Types.ObjectId,ref:"Project",required:true},
     endpoint:{type:String,required:true},
-    method:{type:String,required:true,enum:["GET","POST","PUT","DELETE","PATCH"]},
+    method:{type:String,required:true,enum:["GET","POST","PUT","DELETE","PATCH","HEAD","OPTIONS"]},
     statusCode:{type:Number,required:true},
     responseTime:{type:Number,required:true},
     timestamp:{type:Date,default:Date.now},
