@@ -97,9 +97,13 @@ export const observixMiddleware = (apiKey) => {
           timestamp: new Date(),
         });
       } catch (err) {
-        console.error(err.message);
+        console.error({
+          message: error.message,
+          code: error.code,
+          status: error.response?.status,
+          data: error.response?.data,
+        });
       }
-
     });
 
     next();
